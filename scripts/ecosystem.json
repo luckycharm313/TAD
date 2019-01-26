@@ -1,0 +1,9 @@
+{
+  "apps" : [{
+    "name"        : "cbgsite",
+    "script"      : "/usr/lib/node_modules/serve/bin/serve.js",
+    "watch"       : true,
+    "cwd"         : "/var/www/html/naga",
+    "args"        : "./build_webpack/ -s -p 3000"
+  }]
+}
