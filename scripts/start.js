@@ -51,8 +51,8 @@ var bodyParser = require('body-parser');
 var router = express.Router();
 var app = express();
 //app.use(cors())
-mongoose.connect('mongodb://localhost/TADDB');
-
+mongoose.connect('mongodb://localhost/TADDB',()=>{console.log("mongoDB connected")});
+// mongoose.connect('mongodb://localhost:53791/');
 
   var governorSchema = require('./models/governors').governorSchema;
   var userSchema = require('./models/servers').userSchema;
@@ -344,8 +344,15 @@ function setGovernors(){
     var obj = JSON.parse(data); //now it an object
     obj.table = req.body.numbers;
     var json = JSON.stringify(obj);
-    fs.writeFile('winningNumbers.json', json, 'utf8');
-    return res.send(obj.table)
+    fs.writeFile('winningNumbers.json', json, 'utf8', function writeFileCallBack(err, data){
+      if(err){
+        console.log(err);
+      }
+      else{
+        return res.send(obj.table)
+      }      
+    });
+    // return res.send(obj.table)
 }});
 
   });
@@ -361,8 +368,15 @@ function setGovernors(){
     console.log(obj.table.findIndex((i) => i.currency == req.body.currency))
     obj.table[obj.table.findIndex((i) => i.currency == req.body.currency)].price = req.body.price;
     var json = JSON.stringify(obj);
-    fs.writeFile('currencyTable.json', json, 'utf8');
-    return res.send(obj.table)
+    fs.writeFile('currencyTable.json', json, 'utf8', function writeFileCallBack(err, data){
+      if(err){
+        console.log(err);
+      }
+      else{
+        return res.send(obj.table)
+      }      
+    });
+    
 }});
 
   });
