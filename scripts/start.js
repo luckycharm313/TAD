@@ -51,7 +51,8 @@ var bodyParser = require('body-parser');
 var router = express.Router();
 var app = express();
 //app.use(cors())
-mongoose.connect('mongodb://localhost/TADDB',()=>{console.log("mongoDB connected")});
+// mongoose.connect('mongodb://localhost/TADDB',()=>{console.log("mongoDB connected")});
+mongoose.connect('mongodb://admin:admin123!@ds121135.mlab.com:21135/taddb',()=>{console.log("mongoDB connected")});
 // mongoose.connect('mongodb://localhost:53791/');
 
   var governorSchema = require('./models/governors').governorSchema;

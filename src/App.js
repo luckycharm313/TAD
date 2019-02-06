@@ -13,350 +13,21 @@ import "./css/oswald.css";
 import "./css/open-sans.css";
 import "./css/pure-min.css";
 import "./App.css";
+import { states } from "./constant";
 
 var ReactBsTable = require("react-bootstrap-table");
 var BootstrapTable = ReactBsTable.BootstrapTable;
 var TableHeaderColumn = ReactBsTable.TableHeaderColumn;
 
 const address = "0x9dda40dabd849bbb087dcbcf0c5223ec5ffa0ad7";
-// const ropstenAddress = "0x6853575b45e1c87081c566e875866255cfe4bf95";
-// const ropstenAddress = "0x6A861c7d91572A1C6871Ec702BCe0EB77EdEAC67";
+// const ropstenAddress = "0x6853575b45e1C87081c566E875866255CFe4BF95";
 const ropstenAddress = "0xa2a20b23318563b890793939c0e4158d12e58507";
+const frontend_endPoint = "http://localhost:3000/";
+const backend_endPoint = "http://localhost:5001/";
 
-const states = [
-  "Alabama",
-  "Alaska",
-  "Arizona",
-  "Arkansas",
-  "California",
-  "Colorado",
-  "Connecticut",
-  "Delaware",
-  "Florida",
-  "Georgia",
-  "Hawaii",
-  "Idaho",
-  "Illinois",
-  "Indiana",
-  "Iowa",
-  "Kansas",
-  "Kentucky",
-  "Louisiana",
-  "Maine",
-  "Maryland",
-  "Massachusetts",
-  "Michigan",
-  "Minnesota",
-  "Mississippi",
-  "Missouri",
-  "Montana",
-  "Nebraska",
-  "Nevada",
-  "New Hampshire",
-  "New Jersey",
-  "New Mexico",
-  "New York",
-  "North Carolina",
-  "North Dakota",
-  "Ohio",
-  "Oklahoma",
-  "Oregon",
-  "Pennsylvania",
-  "Rhode Island",
-  "South Carolina",
-  "South Dakota",
-  "Tennessee",
-  "Texas",
-  "Utah",
-  "Vermont",
-  "Virginia",
-  "Washington",
-  "West Virginia",
-  "Wisconsin",
-  "Wyoming"
-];
 
-const SimpleStorageContract = {
-  abi: [
-    {
-      constant: true,
-      inputs: [],
-      name: "name",
-      outputs: [{ name: "", type: "string" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_spender", type: "address" },
-        { name: "_value", type: "uint256" }
-      ],
-      name: "approve",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "tadTax",
-      outputs: [{ name: "", type: "uint8" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "totalSupply",
-      outputs: [{ name: "", type: "uint256" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_from", type: "address" },
-        { name: "_to", type: "address" },
-        { name: "_value", type: "uint256" }
-      ],
-      name: "transferFrom",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "decimals",
-      outputs: [{ name: "", type: "uint8" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [{ name: "_value", type: "uint256" }],
-      name: "burn",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [{ name: "_value", type: "uint8" }],
-      name: "setGameTax",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [{ name: "", type: "address" }],
-      name: "balanceOf",
-      outputs: [{ name: "", type: "uint256" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "sender", type: "address" },
-        { name: "receiver", type: "address" },
-        { name: "_value", type: "uint256" },
-        { name: "item", type: "string" }
-      ],
-      name: "makeTrade",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "govTax",
-      outputs: [{ name: "", type: "uint8" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_from", type: "address" },
-        { name: "_value", type: "uint256" }
-      ],
-      name: "burnFrom",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "owner",
-      outputs: [{ name: "", type: "address" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "symbol",
-      outputs: [{ name: "", type: "string" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "govFunds",
-      outputs: [{ name: "", type: "uint256" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [{ name: "_value", type: "uint8" }],
-      name: "setGovTax",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [{ name: "_value", type: "uint256" }],
-      name: "mint",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [{ name: "newOwner", type: "address" }],
-      name: "changeOwner",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [{ name: "", type: "uint256" }],
-      name: "governors",
-      outputs: [{ name: "", type: "address" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [],
-      name: "payOutGovernors",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_to", type: "address" },
-        { name: "_value", type: "uint256" }
-      ],
-      name: "transfer",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_spender", type: "address" },
-        { name: "_value", type: "uint256" },
-        { name: "_extraData", type: "bytes" }
-      ],
-      name: "approveAndCall",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [{ name: "", type: "address" }, { name: "", type: "address" }],
-      name: "allowance",
-      outputs: [{ name: "", type: "uint256" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "number", type: "uint8" },
-        { name: "user", type: "address" }
-      ],
-      name: "setGovernor",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      inputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "constructor"
-    },
-    {
-      anonymous: false,
-      inputs: [
-        { indexed: true, name: "from", type: "address" },
-        { indexed: true, name: "to", type: "address" },
-        { indexed: false, name: "value", type: "uint256" }
-      ],
-      name: "Transfer",
-      type: "event"
-    },
-    {
-      anonymous: false,
-      inputs: [
-        { indexed: true, name: "from", type: "address" },
-        { indexed: false, name: "value", type: "uint256" }
-      ],
-      name: "Burn",
-      type: "event"
-    },
-    {
-      anonymous: false,
-      inputs: [
-        { indexed: false, name: "sender", type: "address" },
-        { indexed: false, name: "receiver", type: "address" },
-        { indexed: false, name: "amount", type: "uint256" },
-        { indexed: false, name: "item", type: "string" }
-      ],
-      name: "confirmTrade",
-      type: "event"
-    }
-  ]
-};
+
+const SimpleStorageContract = require('./contract.json');
 
 class App extends Component {
   constructor(props) {
@@ -376,10 +47,10 @@ class App extends Component {
       govTaxAmount: 0,
       tadTaxAmount: 0,
       governors: [
-        { id: 1, name: "Random Player" },
-        { id: 2, name: "Random Player" },
-        { id: 3, name: "Random Player" },
-        { id: 4, name: "Random Player" }
+        // { id: 1, name: "Random Player" },
+        // { id: 2, name: "Random Player" },
+        // { id: 3, name: "Random Player" },
+        // { id: 4, name: "Random Player" }
       ],
       exchangeValues: [
         { currency: "USD", price: 5 },
@@ -420,7 +91,7 @@ class App extends Component {
       refLink: null,
       network: 0,
       widgetOpen: true,
-      profileOpen: false
+      profileOpen: false,
     };
     this.handleOpenModal = this.handleOpenModal.bind(this);
     this.handleCloseModal = this.handleCloseModal.bind(this);
@@ -526,11 +197,13 @@ class App extends Component {
   }
 
   handleClose = () => this.setState({ isShowingRoyaleModal: false });
+  
+  handletadCloseModal = () => this.setState({showtadModal: false});
 
   componentDidMount() {
     ReactModal.setAppElement("body");
 
-    fetch("http://localhost:5001/getNumbers/", {
+    fetch(backend_endPoint + "getNumbers/", {
       method: "post",
       //mode: 'no-cors',
       headers: {
@@ -549,7 +222,7 @@ class App extends Component {
       })
       .catch(function(err) {});
 
-    fetch("http://localhost:5001/getItems/", {
+    fetch(backend_endPoint + "getItems/", {
       method: "get",
       //mode: 'no-cors',
       headers: {
@@ -564,7 +237,7 @@ class App extends Component {
       })
       .catch(function(err) {});
 
-    fetch("http://localhost:5001/getAuction/", {
+    fetch(backend_endPoint + "getAuction/", {
       method: "get",
       //mode: 'no-cors',
       headers: {
@@ -582,7 +255,7 @@ class App extends Component {
 
   createItem() {
     console.log("CReating");
-    fetch("http://localhost:5001/createItem/", {
+    fetch(backend_endPoint + "createItem/", {
       method: "post",
       //mode: 'no-cors',
       headers: {
@@ -604,6 +277,7 @@ class App extends Component {
   }
 
   componentWillMount() {
+    console.log(" component will Mount =>",SimpleStorageContract);
     //var that = this;
     getWeb3
       .then(results => {
@@ -638,7 +312,7 @@ class App extends Component {
   }
 
   setNumbers() {
-    fetch("http://localhost:5001/setNumbers/", {
+    fetch(backend_endPoint + "setNumbers/", {
       method: "post",
       //mode: 'no-cors',
       headers: {
@@ -691,7 +365,7 @@ class App extends Component {
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
 
-    fetch("http://localhost:5001/test/", {
+    fetch(backend_endPoint + "test/", {
       method: "post",
       //mode: 'no-cors',
       headers: {
@@ -707,7 +381,7 @@ class App extends Component {
     })
       .then(response => response.json())
       .then(data => {
-        console.log("data" + data);
+        console.log("data", data);
         this.setState({ exchangeValues: data });
       })
       .catch(function(err) {});
@@ -727,23 +401,22 @@ class App extends Component {
           console.log(result);
           //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
           return simpleStorageInstance.totalSupply().then(result => {
-            console.log("SUPPLY");
+            console.log("SUPPLY", simpleStorageInstance);
             console.log((result / Math.pow(10, 18)).toString(10));
             this.setState({
               totalSupply: (result / Math.pow(10, 18)).toString(10)
             });
             return simpleStorageInstance.govTax().then(result => {
-              console.log("GOV TAX");
-              console.log(result);
+              console.log("GOV TAX", result.toString(10));
               this.setState({ govTax: result.toString(10) });
               return simpleStorageInstance.tadTax().then(result => {
-                console.log("TAD TAX");
+                console.log("TAD TAX",result.toString(10));
                 this.setState({ tadTax: result.toString(10) });
                 return simpleStorageInstance.govFunds().then(result => {
-                  console.log("GOV FUNDS");
+                  console.log("GOV FUNDS", result.toString(10));
                   this.setState({ govFunds: result.toString(10) });
                   var arr = [];
-
+                  console.log(" account ", accounts.length);
                   for (let x = 0; x < 50; x++) {
                     simpleStorageInstance.governors(x).then(result => {
                       console.log(result);
@@ -991,7 +664,7 @@ class App extends Component {
   }
 
   changeCurrency() {
-    fetch("http://localhost:5001/test2/", {
+    fetch(backend_endPoint + "test2/", {
       method: "post",
       //mode: 'no-cors',
       headers: {
@@ -1013,6 +686,8 @@ class App extends Component {
   }
 
   buttonFormatter(cell, row) {
+    console.log("cell", cell)
+    console.log("row", row)
     return (
       <button onClick={() => this.handleGovOpenModal(row.id)}>EDIT</button>
     );
@@ -1088,68 +763,14 @@ class App extends Component {
     this.setState({ winningNumbers: arr });
   }
 
-  /*updateStates() {
-    var states = [
-      "Alabama",
-      "Alaska",
-      "Arizona",
-      "Arkansas",
-      "California",
-      "Colorado",
-      "Connecticut",
-      "Delaware",
-      "Florida",
-      "Georgia",
-      "Hawaii",
-      "Idaho",
-      "Illinois",
-      "Indiana",
-      "Iowa",
-      "Kansas",
-      "Kentucky",
-      "Louisiana",
-      "Maine",
-      "Maryland",
-      "Massachusetts",
-      "Michigan",
-      "Minnesota",
-      "Mississippi",
-      "Missouri",
-      "Montana",
-      "Nebraska",
-      "Nevada",
-      "New Hampshire",
-      "New Jersey",
-      "New Mexico",
-      "New York",
-      "North Carolina",
-      "North Dakota",
-      "Ohio",
-      "Oklahoma",
-      "Oregon",
-      "Pennsylvania",
-      "Rhode Island",
-      "South Carolina",
-      "South Dakota",
-      "Tennessee",
-      "Texas",
-      "Utah",
-      "Vermont",
-      "Virginia",
-      "Washington",
-      "West Virginia",
-      "Wisconsin",
-      "Wyoming"
-    ];
-  }*/
-
   render() {
+    console.log(" gover => ", this.state.governors);
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
     const panels = [
       <main
         style={{
           backgroundColor: "#2c2c2c",
-          backgroundImage: "url('http://localhost:3000/usFlag.jpg')",
+          backgroundImage: `url("${frontend_endPoint}usFlag.jpg")`,
           backgroundSize: "cover",
           height: "100vh",
           margin: 0,
@@ -1209,11 +830,11 @@ class App extends Component {
                 <TableHeaderColumn dataAlign="center" dataField="name">
                   Name
                 </TableHeaderColumn>
-                <TableHeaderColumn
+                {/* <TableHeaderColumn
                   dataAlign="center"
                   width={"20px"}
                   dataField="p"
-                />
+                /> */}
                 <TableHeaderColumn
                   dataAlign="center"
                   dataFormat={this.buttonFormatter}
@@ -1326,7 +947,7 @@ class App extends Component {
       <main
         style={{
           backgroundColor: "#2c2c2c",
-          backgroundImage: "url('http://localhost:3000/usFlag.jpg')",
+          backgroundImage: `'url("${frontend_endPoint}usFlag.jpg")'`,
           backgroundSize: "cover",
           height: "100vh",
           margin: 0,
@@ -1522,7 +1143,7 @@ class App extends Component {
       <main
         style={{
           backgroundColor: "#2c2c2c",
-          backgroundImage: "url('http://localhost:3000/usFlag.jpg')",
+          backgroundImage: `'url("${frontend_endPoint}usFlag.jpg")'`,
           backgroundSize: "cover",
           height: "100vh",
           margin: 0,
@@ -1670,9 +1291,6 @@ class App extends Component {
               content: {
                 color: "white",
                 backgroundColor: "rgba(0,0,0,0.8)",
-                backgroundImage:
-                  "url(https://cryptobattlegrounds.io/layout2.png)",
-                backgroundSize: "100% 100%",
                 margin: "15% calc(15% - 60px)",
                 width: "70%",
                 height: "45%",
