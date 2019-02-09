@@ -9,11 +9,19 @@ import ping from "web-pingjs";
 //import '../EUservers/Lucifer/public/sc-codec-min-bin.js'
 import { withAlert } from "react-alert";
 import ReactModal from "react-modal";
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
+
 import "./css/oswald.css";
 import "./css/open-sans.css";
 import "./css/pure-min.css";
 import "./App.css";
 import { states } from "./constant";
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faEdit, faSave, faTrash)
 
 var ReactBsTable = require("react-bootstrap-table");
 var BootstrapTable = ReactBsTable.BootstrapTable;
@@ -63,7 +71,9 @@ class App extends Component {
       europePing: 0,
       asiaPing: 0,
       usPing: 0,
-      jackpot: 500000,
+      jackpot: 0,
+      jackpotId: "",
+      jackpotDD: 0,
       coinbase: "",
       regionSelected: 0,
       transactionStage: 3,
@@ -91,7 +101,8 @@ class App extends Component {
       refLink: null,
       network: 0,
       widgetOpen: true,
-      profileOpen: false
+      profileOpen: false,
+      isEditJackPot: false,
     };
     this.handleOpenModal = this.handleOpenModal.bind(this);
     this.handleCloseModal = this.handleCloseModal.bind(this);
@@ -119,6 +130,10 @@ class App extends Component {
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handlePriceChange = this.handlePriceChange.bind(this);
     this.handleGovChange = this.handleGovChange.bind(this);
+    this.onChangeJackpot = this.onChangeJackpot.bind(this);
+    this.entriesAction = this.entriesAction.bind(this);
+    this.handleDeleteEntries = this.handleDeleteEntries.bind(this);
+    this.deleteAllItems = this.deleteAllItems.bind(this);
   }
 
   handleOpenModal() {
@@ -172,7 +187,7 @@ class App extends Component {
   handleTadChange = event => {
     this.setState({ tadTaxAmount: event.target.value });
   };
-
+  
   handleGovNameChange(event) {
     this.setState({ govName: event.target.value });
   }
@@ -200,6 +215,113 @@ class App extends Component {
   handleClose = () => this.setState({ isShowingRoyaleModal: false });
 
   handletadCloseModal = () => this.setState({ showtadModal: false });
+
+  onChangeJackpot(event) {
+    this.setState({ jackpot: event.target.value });
+  }
+  
+  saveJackPot = () =>{
+    this.setState({isEditJackPot: false})
+    fetch(backend_endPoint + "setJackpot/", {
+      method: "post",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: this.state.jackpotId,
+        value: this.state.jackpot,
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data){
+        this.setState({isEditJackPot: false})
+      }
+      else{
+        alert("Server Database Error");
+      }
+    })
+    .catch(function(err) {
+      console.log("create item err " , err);
+    });
+  }
+
+  editJackPot = () =>{
+    this.jackpotInput.focus();
+    this.setState({isEditJackPot: true})
+  }
+  
+  handleDeleteEntries(name) {
+    confirmAlert({
+      title: '',
+      message: 'Are you sure you want to delete this item?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => {
+            fetch(backend_endPoint + "deleteItem/", {
+              method: "post",
+              //mode: 'no-cors',
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                name: name
+              })
+            })
+            .then(response => response.json())
+            .then(itemList => {
+              this.setState({ itemList });        
+            })
+            .catch(function(err) {
+              console.log("create item err " , err);
+            });
+          }
+        },
+        {
+          label: 'No',
+          onClick: () => {}
+        }
+      ]
+    })
+  }
+
+  deleteAllItems() {
+    confirmAlert({
+      title: '',
+      message: 'Are you sure you want to delete all items?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => {
+            fetch(backend_endPoint + "deleteAllItem/", {
+              method: "post",
+              //mode: 'no-cors',
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+              }
+            })
+            .then(response => response.json())
+            .then(itemList => {
+              this.setState({ itemList });        
+            })
+            .catch(function(err) {
+              console.log("create item err " , err);
+            });
+          }
+        },
+        {
+          label: 'No',
+          onClick: () => {}
+        }
+      ]
+    })
+  }
+
 
   componentDidMount() {
     ReactModal.setAppElement("body");
@@ -252,29 +374,42 @@ class App extends Component {
         this.setState({ auctionList: data });
       })
       .catch(function(err) {});
+
+    fetch(backend_endPoint + "getJackpot/", {
+        method: "get",
+        //mode: 'no-cors',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        this.setState({jackpot: data[0].value, jackpotId:data[0]._id});
+      })
+      .catch(function(err) {});
   }
 
   createItem() {
-    console.log("CReating");
-    fetch(backend_endPoint + "createItem/", {
-      method: "post",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: this.state.itemName,
-        price: this.state.itemPrice,
-        category: this.state.itemCategory
+      fetch(backend_endPoint + "createItem/", {
+        method: "post",
+        //mode: 'no-cors',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: this.state.itemName,
+          price: this.state.itemPrice,
+          category: this.state.itemCategory
+        })
       })
-    })
       .then(response => response.json())
       .then(data => {
         this.setState({ itemList: data });        
       })
       .catch(function(err) {
-        console.log("create item errr " , err);
+        console.log("create item err " , err);
       });
   }
 
@@ -684,6 +819,14 @@ class App extends Component {
       <button onClick={() => this.handleGovOpenModal(row.id)}>EDIT</button>
     );
   }
+  
+  entriesAction(cell, row) {
+    return (
+      <div onClick={()=>this.handleDeleteEntries(row.name)}>
+        <FontAwesomeIcon size="1x" color="white" icon = "trash" />
+      </div>
+    );
+  }
 
   ticketFormatter(cell, row) {
     return (
@@ -728,6 +871,7 @@ class App extends Component {
     payout += this.state.jackpot * 0.2 * four.length;
     payout += this.state.jackpot * 0.3 * five.length;
     payout += this.state.jackpot * six.length;
+    
     return payout;
   }
 
@@ -757,7 +901,7 @@ class App extends Component {
 
   render() {
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
-    console.log("ticketList=> ", this.state.ticketList)
+    console.log("ticketList=> ", this.state.jackpot)
     const panels = [
       <main
         style={{
@@ -988,13 +1132,6 @@ class App extends Component {
                 striped
                 hover
               >
-                {/* <TableHeaderColumn
-                  dataAlign="center"
-                  isKey
-                  width={"25px"}
-                  dataField="id"
-                >
-                </TableHeaderColumn> */}
                 <TableHeaderColumn
                   dataAlign="center"
                   width={"15px"}
@@ -1010,6 +1147,12 @@ class App extends Component {
                 >
                   Numbers
                 </TableHeaderColumn>
+                <TableHeaderColumn
+                  dataAlign="center"
+                  dataFormat={this.buttonFormatter}
+                  width={"20px"}
+                  dataField="id"
+                />
               </BootstrapTable>
             </div>
           </div>
@@ -1123,12 +1266,53 @@ class App extends Component {
           <div style={{ flex: 1 }}>
             <div style={{ height: "40%" }} className="box">
               <h2>CURRENT JACKPOT</h2>
-              <h1 style={{ textAlign: "center" }}>
-                $
-                {this.state.jackpot
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-              </h1>
+              <div style={{
+                    marginTop: "10px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+              }}>
+              
+                <span
+                  style={{
+                    fontSize: "30px",
+                    color: "white",
+                    fontWeight: "bold",
+                    marginRight: "5px",
+                    textAlign: "left"
+                }}>$</span>
+                <input
+                    ref={(input) => { this.jackpotInput = input; }} 
+                    value={
+                      this.state.isEditJackPot?this.state.jackpot:
+                      this.state.jackpot
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
+                      
+                    onChange={this.onChangeJackpot}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "none",
+                      fontSize: "30px",
+                      color: "white",
+                      fontWeight: "bold",
+                      marginRight: "20px",
+                      width: "70%",
+                      textAlign: "left"
+                    }}
+                    readOnly = {this.state.isEditJackPot?false:true }                    
+                  />
+                  
+                <div onClick={()=>{ 
+                  if(this.state.isEditJackPot)
+                    return this.saveJackPot();
+                  else
+                    return this.editJackPot();
+                  }}>
+                  <FontAwesomeIcon size="lg" color="white" icon = {this.state.isEditJackPot?"save":"edit" } />
+                </div>
+              </div>
+              
             </div>
           </div>
         </div>
@@ -1177,7 +1361,12 @@ class App extends Component {
         >
           <div style={{ flex: 1 }}>
             <div className="box" style={{ height: "57%", overflow: "scroll" }}>
-              <h2>ITEMS</h2>
+              <div style = {{position:"relative"}}>
+                <h2>ITEMS</h2>
+                <div style = {{position:"absolute", right: "22px", top: "12px"}} onClick={()=>this.deleteAllItems()}>
+                  <FontAwesomeIcon size="lg" color="white" icon = "trash" />
+                </div>
+              </div>
               <BootstrapTable
                 data={this.state.itemList}
                 height="200px"
@@ -1194,42 +1383,41 @@ class App extends Component {
                 >
                   Name
                 </TableHeaderColumn>
-                <TableHeaderColumn
-                  dataAlign="center"
-                  width={"15px"}
-                  dataField="category"
-                >
-                  Category
-                </TableHeaderColumn>
                 <TableHeaderColumn dataAlign="center" dataField="price" >
                   Price
                 </TableHeaderColumn>
+                <TableHeaderColumn
+                  dataAlign="center"
+                  dataFormat={this.entriesAction}
+                  dataField="id"
+                  width="60px"
+                />
               </BootstrapTable>
             </div>
 
             <div className="box" style={{ height: "33%", overflow: "scroll" }}>
               <h2>CREATE ITEM</h2>
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", padding: 10 }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: "white" }}>Name:</p>
                   <input
                     value={this.state.itemName}
                     onChange={this.handleNameChange}
                   />
-                  <p style={{ color: "white" }}>Price:</p>
+                  <p style={{ color: "white", marginTop: 20 }}>Price:</p>
                   <input
                     value={this.state.itemPrice}
                     onChange={this.handlePriceChange}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, }}>
                   <p style={{ color: "white" }}>Category:</p>
                   <input
                     value={this.state.itemCategory}
                     onChange={this.handleCategoryChange}
                   />
                   <br />
-                  <button onClick={this.createItem}>Create</button>
+                  <button style={{ marginTop:"15px"}} onClick={this.createItem}>Create</button>
                 </div>
               </div>
             </div>

@@ -59,6 +59,7 @@ var governorSchema = require("./models/governors").governorSchema;
 var userSchema = require("./models/servers").userSchema;
 var itemSchema = require("./models/items").itemSchema;
 var auctionSchema = require("./models/auction").auctionSchema;
+var jackpotSchema = require("./models/jackpot").jackpotSchema;
 
 const crypto = require("crypto");
 //const hash = crypto.createHash('sha256');
@@ -253,10 +254,68 @@ app.post("/purchaseItem", function(req, res) {
   });
 });
 
+app.post("/deleteItem", function(req, res) {
+  var Item = mongoose.model("Items", itemSchema);
+  
+  Item.remove({ name: req.body.name }, function (err) {
+      if (err)
+          throw err;
+      
+      Item.find({}, function(err, it) {
+        return res.send(it);
+      });
+  });
+  
+});
+
+app.post("/deleteAllItem", function(req, res) {
+  var Item = mongoose.model("Items", itemSchema);
+  
+  Item.remove({}, function (err) {
+      if (err)
+          throw err;
+      
+      Item.find({}, function(err, it) {
+        return res.send(it);
+      });
+  });
+
+});
+
 app.get("/getItems", function(req, res) {
   var Item = mongoose.model("Items", itemSchema);
   Item.find({}, function(err, it) {
     return res.send(it);
+  });
+});
+
+app.get("/getJackpot", function(req, res) {
+  var Jackpot = mongoose.model("Jackpot", jackpotSchema);
+  Jackpot.find({}, function(err, data) {
+    console.log("getJackpot=> ", data);
+    return res.send(data);
+  });
+});
+
+app.post("/setJackpot", function(req, res) {
+  var Jackpot = mongoose.model("Jackpot", jackpotSchema);
+  
+  Jackpot.findOne({ id: req.body.auctionId }, async function(err, _jackpot) {
+    if(!err){
+      if (_jackpot == "undefined" || _jackpot == null) {
+        var nJackpot = new Jackpot({
+          value: req.body.value
+        });
+        await nJackpot.save();
+      } else {
+        _jackpot.value = req.body.value;
+        await _jackpot.save();
+      }      
+      return res.send(true);
+    }
+    else{
+      return res.send(false);
+    }
   });
 });
 

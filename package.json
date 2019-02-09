@@ -50,6 +50,9 @@
     "whatwg-fetch": "1.0.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.14",
+    "@fortawesome/free-solid-svg-icons": "^5.7.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
     "@widgetbot/react-embed": "^1.2.1",
     "dotenv": "^2.0.0",
     "ethereum-input-data-decoder": "0.0.12",
@@ -61,6 +64,7 @@
     "react-alert": "^4.0.4",
     "react-alert-template-oldschool-dark": "^1.0.1",
     "react-bootstrap-table": "^4.3.1",
+    "react-confirm-alert": "^2.1.0",
     "react-dom": "^16.0.0",
     "react-konva": "^1.7.4",
     "react-responsive": "^6.0.1",
