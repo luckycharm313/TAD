@@ -108,6 +108,7 @@ button{
   background-color: #7b0707ab;
   margin: 0;
   text-align: center;
+  padding: 7px 0px;
 }
 
 @keyframes fade {

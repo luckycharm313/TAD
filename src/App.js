@@ -5,7 +5,7 @@ import getWeb3 from "./utils/getWeb3";
 import "rc-slider/assets/index.css";
 // import Ping from "ping.js";
 import MediaQuery from "react-responsive";
-import ping from 'web-pingjs';
+import ping from "web-pingjs";
 //import '../EUservers/Lucifer/public/sc-codec-min-bin.js'
 import { withAlert } from "react-alert";
 import ReactModal from "react-modal";
@@ -22,12 +22,12 @@ var TableHeaderColumn = ReactBsTable.TableHeaderColumn;
 const address = "0x9dda40dabd849bbb087dcbcf0c5223ec5ffa0ad7";
 // const ropstenAddress = "0x6853575b45e1C87081c566E875866255CFe4BF95";
 const ropstenAddress = "0xa2a20b23318563b890793939c0e4158d12e58507";
+// const ropstenAddress = "0x2ba884d22eb89ee44574e0a43dca2e5ff5fc5726";
+// const ropstenAddress = "0xE8C589fD5bc45759F733514FE5f3F9b34bE91eA5";
 const frontend_endPoint = "http://localhost:3000/";
 const backend_endPoint = "http://localhost:5001/";
 
-
-
-const SimpleStorageContract = require('./contract.json');
+const SimpleStorageContract = require("./contract.json");
 
 class App extends Component {
   constructor(props) {
@@ -53,10 +53,10 @@ class App extends Component {
         // { id: 4, name: "Random Player" }
       ],
       exchangeValues: [
-        { currency: "USD", price: 5 },
-        { currency: "GBP", price: 5 },
-        { currency: "VND", price: 5 },
-        { currency: "AUD", price: 5 }
+        { currency: "USD", price: 5 }
+        // { currency: "GBP", price: 5 },
+        // { currency: "VND", price: 5 },
+        // { currency: "AUD", price: 5 }
       ],
       ledger: [{ user: "player1", buy: "item", price: 55 }],
       web3: null,
@@ -91,7 +91,7 @@ class App extends Component {
       refLink: null,
       network: 0,
       widgetOpen: true,
-      profileOpen: false,
+      profileOpen: false
     };
     this.handleOpenModal = this.handleOpenModal.bind(this);
     this.handleCloseModal = this.handleCloseModal.bind(this);
@@ -118,6 +118,7 @@ class App extends Component {
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handlePriceChange = this.handlePriceChange.bind(this);
+    this.handleGovChange = this.handleGovChange.bind(this);
   }
 
   handleOpenModal() {
@@ -168,9 +169,9 @@ class App extends Component {
     this.setState({ govTaxAmount: event.target.value });
   }
 
-  handleTadChange =(event)=> {
+  handleTadChange = event => {
     this.setState({ tadTaxAmount: event.target.value });
-  }
+  };
 
   handleGovNameChange(event) {
     this.setState({ govName: event.target.value });
@@ -197,8 +198,8 @@ class App extends Component {
   }
 
   handleClose = () => this.setState({ isShowingRoyaleModal: false });
-  
-  handletadCloseModal = () => this.setState({showtadModal: false});
+
+  handletadCloseModal = () => this.setState({ showtadModal: false });
 
   componentDidMount() {
     ReactModal.setAppElement("body");
@@ -232,7 +233,7 @@ class App extends Component {
     })
       .then(response => response.json())
       .then(data => {
-        console.log(data);
+        console.log("itemList: ", data);
         this.setState({ itemList: data });
       })
       .catch(function(err) {});
@@ -270,14 +271,15 @@ class App extends Component {
     })
       .then(response => response.json())
       .then(data => {
-        console.log("data" + data);
-        //this.setState({winningNumbers: data});
+        this.setState({ itemList: data });        
       })
-      .catch(function(err) {});
+      .catch(function(err) {
+        console.log("create item errr " , err);
+      });
   }
 
   componentWillMount() {
-    console.log(" component will Mount =>",SimpleStorageContract);
+    console.log(" component will Mount =>", SimpleStorageContract);
     //var that = this;
     getWeb3
       .then(results => {
@@ -306,8 +308,8 @@ class App extends Component {
           }
         });
       })
-      .catch((e) => {
-        console.log("Error finding web3."+e);
+      .catch(e => {
+        console.log("Error finding web3." + e);
       });
   }
 
@@ -351,10 +353,7 @@ class App extends Component {
         })
         .then(result => {
           this.setState({
-            wrappedEth: this.state.web3.fromWei(
-              result.toString(),
-              "ether"
-            )
+            wrappedEth: this.state.web3.fromWei(result.toString(), "ether")
           });
         });
     });
@@ -389,14 +388,14 @@ class App extends Component {
     var simpleStorageInstance;
     // Get accounts.
     this.state.web3.eth.getAccounts((error, accounts) => {
-        simpleStorage
+      simpleStorage
         .at(ropstenAddress)
         .then(instance => {
           simpleStorageInstance = instance;
           this.setState({ coinbase: accounts[0] });
           // Stores a given value, 5 by default.
           return simpleStorageInstance.balanceOf(accounts[0]);
-        })    
+        })
         .then(result => {
           console.log(result);
           //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
@@ -410,7 +409,7 @@ class App extends Component {
               console.log("GOV TAX", result.toString(10));
               this.setState({ govTax: result.toString(10) });
               return simpleStorageInstance.tadTax().then(result => {
-                console.log("TAD TAX",result.toString(10));
+                console.log("TAD TAX", result.toString(10));
                 this.setState({ tadTax: result.toString(10) });
                 return simpleStorageInstance.govFunds().then(result => {
                   console.log("GOV FUNDS", result.toString(10));
@@ -451,11 +450,12 @@ class App extends Component {
           return simpleStorageInstance.balanceOf(accounts[0]);
         })
         .then(result => {
-          console.log(result);
+          console.log(result.toString(10));
           //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
           return simpleStorageInstance
             .setGovTax(this.state.govTaxAmount)
             .then(result => {
+              console.log(" 460 set Gov Tax result ", result);
               return simpleStorageInstance.govTax().then(result => {
                 console.log("GOV TAX");
                 console.log(result);
@@ -568,10 +568,7 @@ class App extends Component {
         })
         .then(result => {
           this.setState({
-            wrappedEth: this.state.web3.fromWei(
-              result.toString(),
-              "ether"
-            )
+            wrappedEth: this.state.web3.fromWei(result.toString(), "ether")
           });
           return simpleStorageInstance.get.call(accounts[0]);
         });
@@ -595,16 +592,10 @@ class App extends Component {
           simpleStorageInstance = instance;
           console.log(accounts[0]);
           console.log(
-            this.state.web3.toWei(
-              this.state.convertAmount.toString(),
-              "ether"
-            )
+            this.state.web3.toWei(this.state.convertAmount.toString(), "ether")
           );
           return simpleStorageInstance.withdraw(
-            this.state.web3.toWei(
-              this.state.convertAmount.toString(),
-              "ether"
-            )
+            this.state.web3.toWei(this.state.convertAmount.toString(), "ether")
           );
         })
         .then(result => {
@@ -626,9 +617,9 @@ class App extends Component {
     //return this.setState({ wrappedEth: result.c[0] })
   }
 
-  changeGovernor(val) {
+  changeGovernor() {
     const contract = require("truffle-contract");
-    
+
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
 
@@ -640,14 +631,17 @@ class App extends Component {
     // console.log("isAddress",isAddress); // true
 
     this.state.web3.eth.getAccounts((error, accounts) => {
-      
       simpleStorage
         .at(ropstenAddress)
         .then(instance => {
           simpleStorageInstance = instance;
           this.setState({ coinbase: accounts[0] });
           console.log(accounts[0]);
+
           simpleStorage.defaults({ from: accounts[0] });
+          console.log("simpleStorage==>", simpleStorageInstance);
+          console.log("val==>", this.state.govNumber);
+          console.log("governors==>", this.state.governors);
           // Stores a given value, 5 by default.
           return simpleStorageInstance.setGovernor(
             this.state.govNumber,
@@ -656,7 +650,7 @@ class App extends Component {
         })
         .then(result => {
           var arr = this.state.governors;
-          arr[val].name = this.state.govName;
+          arr[this.state.govNumber].name = this.state.govName;
           this.setState({ governors: arr });
           this.handleCloseGovModal();
         });
@@ -686,8 +680,6 @@ class App extends Component {
   }
 
   buttonFormatter(cell, row) {
-    console.log("cell", cell)
-    console.log("row", row)
     return (
       <button onClick={() => this.handleGovOpenModal(row.id)}>EDIT</button>
     );
@@ -719,7 +711,7 @@ class App extends Component {
     var five = [];
     var six = [];
     var payout = 0;
-    
+
     this.state.ticketList.forEach(function(e) {
       var count = 0;
       for (var x = 0; x < 6; x++) {
@@ -750,13 +742,13 @@ class App extends Component {
 
   winningNumberUp(val) {
     var arr = this.state.winningNumbers;
-    arr[val] = (arr[val] + 1) % 51;
+    arr[val] = (parseInt(arr[val], 10) + parseInt(1, 10)) % 51;
     this.setState({ winningNumbers: arr });
   }
 
   winningNumberDown(val) {
     var arr = this.state.winningNumbers;
-    if (arr[val] > 0) arr[val] = (arr[val] - 1) % 51;
+    if (arr[val] > 0) arr[val] = (parseInt(arr[val], 10) - parseInt(1, 10)) % 51;
     else {
       arr[val] = 50;
     }
@@ -764,8 +756,8 @@ class App extends Component {
   }
 
   render() {
-    console.log(" gover => ", this.state.governors);
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
+    console.log("ticketList=> ", this.state.ticketList)
     const panels = [
       <main
         style={{
@@ -840,7 +832,7 @@ class App extends Component {
                   dataFormat={this.buttonFormatter}
                   width={"20px"}
                   dataField="id"
-                />                
+                />
               </BootstrapTable>
             </div>
 
@@ -996,18 +988,18 @@ class App extends Component {
                 striped
                 hover
               >
-                <TableHeaderColumn
+                {/* <TableHeaderColumn
                   dataAlign="center"
                   isKey
                   width={"25px"}
                   dataField="id"
                 >
-                  ID
-                </TableHeaderColumn>
+                </TableHeaderColumn> */}
                 <TableHeaderColumn
                   dataAlign="center"
                   width={"15px"}
                   dataField="user"
+                  isKey
                 >
                   Name
                 </TableHeaderColumn>
@@ -1015,7 +1007,9 @@ class App extends Component {
                   dataAlign="center"
                   dataFormat={this.ticketFormatter}
                   dataField="numbers"
-                />
+                >
+                  Numbers
+                </TableHeaderColumn>
               </BootstrapTable>
             </div>
           </div>
@@ -1121,7 +1115,7 @@ class App extends Component {
             <div className="box">
               <h2>PROJECTED PAYOUT</h2>
               <div style={{ padding: "5px", textAlign: "center" }}>
-                <h2>{this.calcPayout(this.state.winningNumbers)} DD</h2>
+                <h2>{this.calcPayout(this.state.winningNumbers)} <span style={{color:"#d8d51a"}}>DD</span></h2>
               </div>
             </div>
           </div>
@@ -1207,7 +1201,9 @@ class App extends Component {
                 >
                   Category
                 </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="price" />
+                <TableHeaderColumn dataAlign="center" dataField="price" >
+                  Price
+                </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
@@ -1265,7 +1261,9 @@ class App extends Component {
                 >
                   Name
                 </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="price" />
+                <TableHeaderColumn dataAlign="center" dataField="price" >
+                  Price
+                </TableHeaderColumn>
               </BootstrapTable>
             </div>
           </div>
