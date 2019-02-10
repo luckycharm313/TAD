@@ -28,7 +28,6 @@ var BootstrapTable = ReactBsTable.BootstrapTable;
 var TableHeaderColumn = ReactBsTable.TableHeaderColumn;
 
 const address = "0x9dda40dabd849bbb087dcbcf0c5223ec5ffa0ad7";
-// const ropstenAddress = "0x6853575b45e1C87081c566E875866255CFe4BF95";
 const ropstenAddress = "0xa2a20b23318563b890793939c0e4158d12e58507";
 // const ropstenAddress = "0x2ba884d22eb89ee44574e0a43dca2e5ff5fc5726";
 // const ropstenAddress = "0xE8C589fD5bc45759F733514FE5f3F9b34bE91eA5";
@@ -81,12 +80,12 @@ class App extends Component {
       itemList: [],
       auctionList: [],
       ticketList: [
-        { user: "0x00000", numbers: [5, 3, 21, 45, 12, 33] },
-        { user: "0x00000", numbers: [5, 3, 21, 45, 12, 33] },
-        { user: "0x00000", numbers: [5, 3, 21, 45, 12, 33] },
-        { user: "0x00000", numbers: [5, 3, 21, 45, 12, 33] }
+        { user: "0x00000", numbers: [5, 3, 3, 5, 12, 33] },
+        { user: "0x00000", numbers: [5, 3, 3, 45, 2, 24] },
+        { user: "0x00000", numbers: [5, 3, 1, 5, 22, 13] },
+        { user: "0x00000", numbers: [12, 13, 21, 12, 22, 23] }
       ],
-      winningNumbers: [7, 7, 7, 7, 7, 7],
+      winningNumbers: [5, 2, 3, 24, 3, 3],
       convertAmount: 0,
       curCurrency: "",
       wrapReq: 0.005,
@@ -816,7 +815,9 @@ class App extends Component {
 
   buttonFormatter(cell, row) {
     return (
-      <button onClick={() => this.handleGovOpenModal(row.id)}>EDIT</button>
+      <div onClick={()=>this.handleGovOpenModal(row.id)}>
+        <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+      </div>
     );
   }
   
@@ -838,9 +839,9 @@ class App extends Component {
 
   buttonCurrencyFormatter(cell, row) {
     return (
-      <button onClick={() => this.handleCurrencyOpenModal(row.currency)}>
-        EDIT
-      </button>
+      <div onClick={()=>this.handleCurrencyOpenModal(row.currency)}>
+        <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+      </div>
     );
   }
 
@@ -848,30 +849,60 @@ class App extends Component {
     this.setState({ panel: val });
   }
 
-  calcPayout(winningNumbers) {
-    var three = [];
-    var four = [];
-    var five = [];
-    var six = [];
-    var payout = 0;
+  getMatchingElementCount(left, right) {
+    let clonedLeft = []
+    left.forEach(element => {
+      clonedLeft.push(element)
+    })
 
-    this.state.ticketList.forEach(function(e) {
-      var count = 0;
-      for (var x = 0; x < 6; x++) {
-        if (e.numbers[x] === winningNumbers[x]) {
-          count++;
-        }
+    let matchedCount = 0
+    right.forEach(element => {
+      //find matching index
+      let matchedIndex = clonedLeft.indexOf(element)
+
+      if (matchedIndex !== -1) {
+        clonedLeft.splice(matchedIndex, 1)
+        matchedCount++
       }
-      if (count === 3) three.push(e.user);
-      else if (count === 4) four.push(e.user);
-      else if (count === 5) five.push(e.user);
-      else if (count === 6) six.push(e.user);
+    })
+
+    return matchedCount
+  }
+
+  calcPayout(winningNumbers) {
+    var dd = this.state.exchangeValues;
+    var usdPrice = 0;
+    dd.forEach(item=>{
+      if(item.currency == "USD")
+        usdPrice = item.price;
+    })
+
+    var isLevel = 0;
+    var payout = 0;
+    this.state.ticketList.forEach(ticket => {
+      let matchingCount = this.getMatchingElementCount(ticket.numbers, winningNumbers)
+
+      if(matchingCount == 6){
+        isLevel = 6;
+      }
+      else if (matchingCount == 5){
+        isLevel = 5;
+      }
+      else if( matchingCount == 4)
+        isLevel = 4;
+
     });
-    payout += this.state.jackpot * 0.1 * three.length;
-    payout += this.state.jackpot * 0.2 * four.length;
-    payout += this.state.jackpot * 0.3 * five.length;
-    payout += this.state.jackpot * six.length;
-    
+
+    if(isLevel == 6){
+      payout = parseInt(this.state.jackpot) / parseInt(usdPrice)
+    }
+    else if (isLevel == 5){
+      payout = (parseInt(this.state.jackpot) * 0.1 ) / parseInt(usdPrice)
+    }
+    else if(isLevel == 4){
+      payout = (parseInt(this.state.jackpot) * 0.01) / parseInt(usdPrice)
+    }
+
     return payout;
   }
 
@@ -901,7 +932,7 @@ class App extends Component {
 
   render() {
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
-    console.log("ticketList=> ", this.state.jackpot)
+    
     const panels = [
       <main
         style={{
@@ -944,7 +975,7 @@ class App extends Component {
             height: "calc(100% - 30px)"
           }}
         >
-          <div style={{ width: "40%" }}>
+          <div style={{ width: "60%" }}>
             <div className="box" style={{ height: "62%", overflow: "scroll" }}>
               <h2>GOVENORS</h2>
               <BootstrapTable
@@ -974,9 +1005,11 @@ class App extends Component {
                 <TableHeaderColumn
                   dataAlign="center"
                   dataFormat={this.buttonFormatter}
-                  width={"20px"}
+                  
                   dataField="id"
-                />
+                >
+                Action
+                </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
@@ -989,25 +1022,29 @@ class App extends Component {
                   padding: "0 5px"
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
                   <h3>TAD</h3>
                 </div>
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <h3>{this.state.tadTax}%</h3>
                 </div>
                 <div style={{ flex: 1, textAlign: "center", margin: "auto" }}>
-                  <button onClick={this.handleTadOpenModal}>EDIT</button>
+                  <div onClick={()=>this.handleTadOpenModal()}>
+                    <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+                  </div>
                 </div>
               </div>
               <div style={{ display: "flex", padding: "0 5px" }}>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
                   <h3>GOV</h3>
                 </div>
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <h3>{this.state.govTax}%</h3>
                 </div>
                 <div style={{ flex: 1, textAlign: "center", margin: "auto" }}>
-                  <button onClick={this.handleOpenModal}>EDIT</button>
+                  <div onClick={()=>this.handleOpenModal()}>
+                    <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1072,7 +1109,7 @@ class App extends Component {
                   dataFormat={this.buttonCurrencyFormatter}
                   dataField="id"
                 >
-                  Price
+                Action
                 </TableHeaderColumn>
               </BootstrapTable>
             </div>
@@ -1150,7 +1187,6 @@ class App extends Component {
                 <TableHeaderColumn
                   dataAlign="center"
                   dataFormat={this.buttonFormatter}
-                  width={"20px"}
                   dataField="id"
                 />
               </BootstrapTable>
@@ -1390,8 +1426,9 @@ class App extends Component {
                   dataAlign="center"
                   dataFormat={this.entriesAction}
                   dataField="id"
-                  width="60px"
-                />
+                >
+                Action
+                </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
@@ -1497,7 +1534,7 @@ class App extends Component {
               }}
             />
             <br />
-            <button onClick={this.changeTadTax.bind(this)}>SET</button>
+            <button style={{ marginTop: 10 }} onClick={this.changeTadTax.bind(this)}>SET</button>
           </ReactModal>
 
           <ReactModal
@@ -1531,7 +1568,7 @@ class App extends Component {
               }}
             />
             <br />
-            <button onClick={this.changeGovTax.bind(this)}>SET</button>
+            <button style={{ marginTop: 10 }} onClick={this.changeGovTax.bind(this)}>SET</button>
           </ReactModal>
 
           <ReactModal
@@ -1565,7 +1602,7 @@ class App extends Component {
               }}
             />
             <br />
-            <button onClick={this.changeGovernor.bind(this)}>SET</button>
+            <button style={{ marginTop: 10 }} onClick={this.changeGovernor.bind(this)}>SET</button>
           </ReactModal>
 
           <ReactModal
@@ -1599,7 +1636,7 @@ class App extends Component {
               }}
             />
             <br />
-            <button onClick={this.changeCurrency.bind(this)}>SET</button>
+            <button style={{ marginTop: 10 }} onClick={this.changeCurrency.bind(this)}>SET</button>
           </ReactModal>
         </MediaQuery>
       </div>
