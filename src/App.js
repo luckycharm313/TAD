@@ -11,6 +11,7 @@ import { withAlert } from "react-alert";
 import ReactModal from "react-modal";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
+import $ from "jquery";
 
 import "./css/oswald.css";
 import "./css/open-sans.css";
@@ -19,7 +20,7 @@ import "./App.css";
 import { states } from "./constant";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faEdit, faSave, faTrash)
 
@@ -28,13 +29,14 @@ var BootstrapTable = ReactBsTable.BootstrapTable;
 var TableHeaderColumn = ReactBsTable.TableHeaderColumn;
 
 const address = "0x9dda40dabd849bbb087dcbcf0c5223ec5ffa0ad7";
-const ropstenAddress = "0xa2a20b23318563b890793939c0e4158d12e58507";
-// const ropstenAddress = "0x2ba884d22eb89ee44574e0a43dca2e5ff5fc5726";
-// const ropstenAddress = "0xE8C589fD5bc45759F733514FE5f3F9b34bE91eA5";
+//local
+// const ropstenAddress = "0x925b54aDD77B84926FB3EE334763946BccD2909a";
+const ropstenAddress = "0xc5d06f81800481828B6951Ae5957Bc69ed61301f";
 const frontend_endPoint = "http://localhost:3000/";
 const backend_endPoint = "http://localhost:5001/";
 
-const SimpleStorageContract = require("./contract.json");
+const SimpleStorageContract = require("../build/contracts/DD.json");
+
 
 class App extends Component {
   constructor(props) {
@@ -80,10 +82,10 @@ class App extends Component {
       itemList: [],
       auctionList: [],
       ticketList: [
-        { user: "0x00000", numbers: [5, 3, 3, 5, 12, 33] },
-        { user: "0x00000", numbers: [5, 3, 3, 45, 2, 24] },
-        { user: "0x00000", numbers: [5, 3, 1, 5, 22, 13] },
-        { user: "0x00000", numbers: [12, 13, 21, 12, 22, 23] }
+        { id: "1", user: "0x00000", numbers: [5, 3, 3, 5, 12, 33] },
+        { id: "2", user: "0x00000", numbers: [5, 3, 3, 45, 2, 24] },
+        { id: "3", user: "0x00000", numbers: [5, 3, 1, 5, 22, 13] },
+        { id: "4", user: "0x00000", numbers: [12, 13, 21, 12, 22, 23] }
       ],
       winningNumbers: [5, 2, 3, 24, 3, 3],
       convertAmount: 0,
@@ -158,7 +160,7 @@ class App extends Component {
   handleGovCloseModal() {
     this.setState({ showGovModal: false });
   }
-
+  
   handleCurrencyOpenModal(val) {
     this.setState({ showCurrencyModal: true, curCurrency: val });
   }
@@ -386,7 +388,7 @@ class App extends Component {
       .then(data => {
         this.setState({jackpot: data[0].value, jackpotId:data[0]._id});
       })
-      .catch(function(err) {});
+      .catch(function(err) { console.log(" fetach err ", err)});
   }
 
   createItem() {
@@ -413,7 +415,6 @@ class App extends Component {
   }
 
   componentWillMount() {
-    console.log(" component will Mount =>", SimpleStorageContract);
     //var that = this;
     getWeb3
       .then(results => {
@@ -437,7 +438,9 @@ class App extends Component {
             that.instantiateRopstenContract();
             that.setState({ network: netId });
           } else {
-            that.instantiateContract();
+            that.instantiateRopstenContract();
+            that.setState({ network: netId });
+            // that.instantiateContract();
             //that.scrapeKyber();
           }
         });
@@ -525,6 +528,7 @@ class App extends Component {
       simpleStorage
         .at(ropstenAddress)
         .then(instance => {
+          console.log(" account ===> ", accounts);
           simpleStorageInstance = instance;
           this.setState({ coinbase: accounts[0] });
           // Stores a given value, 5 by default.
@@ -626,9 +630,9 @@ class App extends Component {
             .setGameTax(this.state.tadTaxAmount)
             .then(result => {
               return simpleStorageInstance.tadTax().then(result => {
-                console.log("GOV TAX");
+                console.log("Tad TAX");
                 console.log(result);
-                this.setState({ govTax: result.toString(10) });
+                this.setState({ tadTax: result.toString(10) });
                 this.handletadCloseModal();
               });
             });
@@ -663,11 +667,17 @@ class App extends Component {
             .mint(that.state.addAmount * Math.pow(10, 18))
             .then(result => {
               console.log("WORKED");
-              return simpleStorageInstance.totalSupply().then(result => {
-                this.setState({
-                  totalSupply: (result / Math.pow(10, 18)).toString(10)
-                });
+              var temp = parseInt(this.state.totalSupply) + parseInt(this.state.addAmount);
+              this.setState({
+                totalSupply: temp.toString(10)
               });
+              // return simpleStorageInstance.totalSupply();
+            
+            // .then(result=>{
+            //   console.log("WORKED supply ", result / Math.pow(10, 18));
+            //   this.setState({
+            //     totalSupply: Math.round(result / Math.pow(10, 18)).toString(10)
+            //   },() => { console.log('new state', this.state.totalSupply)});
             });
         });
     });
@@ -759,10 +769,6 @@ class App extends Component {
 
     // // Declaring this for later so we can chain functions on SimpleStorage.
     var simpleStorageInstance;
-    // Get accounts.
-
-    // var isAddress = this.state.web3.isAddress(ropstenAddress);
-    // console.log("isAddress",isAddress); // true
 
     this.state.web3.eth.getAccounts((error, accounts) => {
       simpleStorage
@@ -773,7 +779,6 @@ class App extends Component {
           console.log(accounts[0]);
 
           simpleStorage.defaults({ from: accounts[0] });
-          console.log("simpleStorage==>", simpleStorageInstance);
           console.log("val==>", this.state.govNumber);
           console.log("governors==>", this.state.governors);
           // Stores a given value, 5 by default.
@@ -784,11 +789,16 @@ class App extends Component {
         })
         .then(result => {
           var arr = this.state.governors;
-          arr[this.state.govNumber].name = this.state.govName;
+          arr.map(element => {
+            if(element.id == this.state.govNumber){
+              element.name = this.state.govName;
+            }
+          })
           this.setState({ governors: arr });
-          this.handleCloseGovModal();
+          this.handleGovCloseModal();
         });
     });
+    
   }
 
   changeCurrency() {
@@ -870,12 +880,12 @@ class App extends Component {
   }
 
   calcPayout(winningNumbers) {
-    var dd = this.state.exchangeValues;
-    var usdPrice = 0;
-    dd.forEach(item=>{
-      if(item.currency == "USD")
-        usdPrice = item.price;
-    })
+    // var dd = this.state.exchangeValues;
+    // var usdPrice = 0;
+    // dd.forEach(item=>{
+    //   if(item.currency == "USD")
+    //     usdPrice = item.price;
+    // })
 
     var isLevel = 0;
     var payout = 0;
@@ -894,13 +904,13 @@ class App extends Component {
     });
 
     if(isLevel == 6){
-      payout = parseInt(this.state.jackpot) / parseInt(usdPrice)
+      payout = parseInt(this.state.jackpot);
     }
     else if (isLevel == 5){
-      payout = (parseInt(this.state.jackpot) * 0.1 ) / parseInt(usdPrice)
+      payout = (parseInt(this.state.jackpot) * 0.1 );
     }
     else if(isLevel == 4){
-      payout = (parseInt(this.state.jackpot) * 0.01) / parseInt(usdPrice)
+      payout = (parseInt(this.state.jackpot) * 0.01);
     }
 
     return payout;
@@ -932,7 +942,7 @@ class App extends Component {
 
   render() {
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
-    
+    console.log("tiketlist=>", this.state.ticketList)
     const panels = [
       <main
         style={{
@@ -1058,11 +1068,11 @@ class App extends Component {
                   .toFixed(0)
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                DD
+                <span style={{color:"#d8d51a"}}>&nbsp;DD</span>
               </h3>
               <h3>
-                $
-                {(parseInt(this.state.totalSupply, 10) * 5)
+                <span style={{color:"#d8d51a"}}>$&nbsp;</span>
+                {(parseInt(this.state.totalSupply, 10) * parseInt(this.state.exchangeValues[0].price, 10))
                   .toString()
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </h3>
@@ -1184,11 +1194,11 @@ class App extends Component {
                 >
                   Numbers
                 </TableHeaderColumn>
-                <TableHeaderColumn
+                {/* <TableHeaderColumn
                   dataAlign="center"
                   dataFormat={this.buttonFormatter}
                   dataField="id"
-                />
+                /> */}
               </BootstrapTable>
             </div>
           </div>
@@ -1294,7 +1304,7 @@ class App extends Component {
             <div className="box">
               <h2>PROJECTED PAYOUT</h2>
               <div style={{ padding: "5px", textAlign: "center" }}>
-                <h2>{this.calcPayout(this.state.winningNumbers)} <span style={{color:"#d8d51a"}}>DD</span></h2>
+                <h2>{this.calcPayout(this.state.winningNumbers)} <span style={{color:"#d8d51a"}}>$</span></h2>
               </div>
             </div>
           </div>

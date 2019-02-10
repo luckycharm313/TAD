@@ -63,7 +63,7 @@ library SafeMath {
 
 interface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes calldata _extraData) external; }
 
-contract DD {
+contract DreamDollar {
     // Public variables of the token
     string public name;
     string public symbol;
@@ -98,8 +98,8 @@ contract DD {
     constructor() public {
         totalSupply = 20000000 * 10 ** uint256(decimals);
         balanceOf[msg.sender] = totalSupply;                
-        name = "DD";                                   
-        symbol = "DD";                               
+        name = "DreamDollar";                                   
+        symbol = "DreamDollar";                               
         owner = msg.sender;
     }
 
@@ -151,32 +151,32 @@ contract DD {
     }
     
     function changeOwner(address newOwner) public returns (bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         owner = newOwner;
         return success;
     }
     
     function mint(uint256 _value) public returns (bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         totalSupply += _value;
         balanceOf[owner] += _value;
         return success;
     }
     
     function setGovTax(uint8 _value) public returns(bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         govTax = _value;
         return success;
     }
     
     function setGameTax(uint8 _value) public returns(bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         tadTax = _value;
         return success;
     }
     
     function payOutGovernors() public returns(bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         for(uint8 x = 0; x < 50; x++){
             balanceOf[governors[x]] += govFunds.div(50);
         }
@@ -185,14 +185,14 @@ contract DD {
     }
     
     function setGovernor(uint8 number, address user) public returns (bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         governors[number] = user;
         return success;
     }
     
     event confirmTrade(address sender, address receiver, uint256 amount, string item);
     function makeTrade(address sender, address receiver, uint256 _value, string memory item) public returns(bool success){
-        // require(msg.sender == owner);
+        require(msg.sender == owner);
         balanceOf[sender] -= _value;
         balanceOf[owner] += _value.div(100).mul(tadTax);
         govFunds += _value.div(100).mul(govTax);
