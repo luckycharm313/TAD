@@ -248,3 +248,18 @@ background-color: #fd0;
 ::-webkit-scrollbar-thumb {
     background: #FF0000;
 }
+
+.modal-content{
+  color: white; 
+  background-color: rgba(0,0,0,0.8);
+  margin: 15% calc(15% - 60px);
+  width: 70%;
+  height: 45%;
+  border: none;
+  border-radius: 5px;
+  text-align: "center";
+  
+}
+::-webkit-input-placeholder {
+  color: #eee;
+}

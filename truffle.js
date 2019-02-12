@@ -14,12 +14,8 @@ module.exports = {
         return new HDWalletProvider(mnemonic,
           "https://ropsten.infura.io/v3/3b60a5f5d79c44fb87064ef9b9fcea5e")
       },
-      // host: "127.0.0.1",
-      // port: 8545,
       network_id: 3,
-      gas: 3000000,     
-      // from: "0x6853575b45e1C87081c566E875866255CFe4BF95"
-      //price: 2,
+      gas: 3000000,
     },
     live: {
       provider: function() {

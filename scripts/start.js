@@ -26,27 +26,20 @@ var useYarn = pathExists.sync(paths.yarnLockFile);
 var cli = useYarn ? "yarn" : "npm";
 var isInteractive = process.stdout.isTTY;
 
-//var cors = require('cors')
-
-var fs = require("fs");
-var https = require("https");
-// Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
-  process.exit(1);
-}
-
-var Web3 = require("web3");
-
-///////////////////////////////////////
-
+/**** server  */
 var express = require("express");
-var path = require("path");
-var mongoose = require("mongoose");
 var bodyParser = require("body-parser");
-var router = express.Router();
+var cookieParser = require('cookie-parser');
+var multer = require('multer');
+var upload = multer();
+
 var app = express();
-//app.use(cors())
-// mongoose.connect('mongodb://localhost/TADDB',()=>{console.log("mongoDB connected")});
+var api = require('./routes/api');
+var route = require('./routes/route');
+
+/****database */
+var mongoose = require('mongoose');
+
 const options = {
   autoIndex: false, // Don't build indexes
   reconnectInterval: 500, // Reconnect every 500ms
@@ -61,20 +54,22 @@ const options = {
 
 mongoose.connect('mongodb://admin:admin123!@ds121135.mlab.com:21135/taddb',options).then(
   ()=>{
-    console.log("connected to mongoDB")
-  },
- (err)=>{
-    console.log(" mongoDB err ",err);
+      console.log("connected to mongoDB")
+  },(err)=>{
+      console.log(" mongoDB err ",err);
 });
 
-var governorSchema = require("./models/governors").governorSchema;
-var userSchema = require("./models/servers").userSchema;
-var itemSchema = require("./models/items").itemSchema;
-var auctionSchema = require("./models/auction").auctionSchema;
-var jackpotSchema = require("./models/jackpot").jackpotSchema;
+// Warn and crash if required files are missing
+if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
+  process.exit(1);
+}
 
-app.use(bodyParser.urlencoded({ extended: true }));
+///////////////////////////////////////
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(upload.array());
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -84,292 +79,9 @@ app.use(function(req, res, next) {
   next();
 });
 
-function generateUID() {
-  var firstPart = (Math.random() * 46656) | 0;
-  var secondPart = (Math.random() * 46656) | 0;
-  firstPart = ("000" + firstPart.toString(36)).slice(-3);
-  secondPart = ("000" + secondPart.toString(36)).slice(-3);
-  return firstPart + secondPart;
-}
 
-app.post("/register", function(req, res) {
-  var User = mongoose.model("Users", userSchema);
-  User.findOne({ coinbase: req.body.cb }, async function(err, products) {
-    if (products == "undefined" || products == null) {
-      var ref = generateUID();
-      var nUser = new User({
-        name: req.body.name,
-        coinbase: req.body.cb,
-        inventory: [],
-        balance: 0,
-        gid: ref,
-        session: ref,
-        rating: 0,
-        reviews: 0,
-        password: req.body.password
-      });
-      await nUser.save();
-      return res.send(ref);
-    } else return res.send("User Already Exists");
-  });
-});
-
-app.post("/login", function(req, res) {
-  var User = mongoose.model("Users", userSchema);
-  User.findOne({ name: req.body.name }, async function(err, products) {
-    if (products != null && req.body.password == products.password) {
-      //var ref = generateUID();
-      products.session = generateUID();
-      await products.save();
-      return res.send(products.session);
-    } else return res.send("No USER Found");
-  });
-});
-
-app.post("/createItem", function(req, res) {
-  var Item = mongoose.model("Items", itemSchema);
-  
-  Item.findOne({ name: req.body.name }, async function(err, products) {
-    if (products == "undefined" || products == null) {
-      //var ref = generateUID();
-      var nUser = new Item({
-        name: req.body.name,
-        category: req.body.category,
-        price: req.body.price
-      });
-      await nUser.save();
-    } else {
-      products.price = req.body.price;
-      await products.save();
-    }
-
-    Item.find({}, function(err, it) {
-      return res.send(it);
-    });
-  });
-});
-
-app.post("/purchaseItem", function(req, res) {
-  var User = mongoose.model("Users", userSchema);
-  var Item = mongoose.model("Items", itemSchema);
-  Item.findOne({ name: req.body.itemName }, function(err, it) {
-    User.findOne({ name: req.body.name }, async function(err, products) {
-      if (
-        products != null &&
-        req.body.session == products.session &&
-        it.price <= products.balance
-      ) {
-        //var ref = generateUID();
-        products.balance -= it.price;
-        products.inventory.push(it);
-        await products.save();
-        return res.send("User Added");
-      } else return res.send("User Already Exists");
-    });
-  });
-});
-
-app.post("/deleteItem", function(req, res) {
-  var Item = mongoose.model("Items", itemSchema);
-  
-  Item.remove({ name: req.body.name }, function (err) {
-      if (err)
-          throw err;
-      
-      Item.find({}, function(err, it) {
-        return res.send(it);
-      });
-  });
-  
-});
-
-app.post("/deleteAllItem", function(req, res) {
-  var Item = mongoose.model("Items", itemSchema);
-  
-  Item.remove({}, function (err) {
-      if (err)
-          throw err;
-      
-      Item.find({}, function(err, it) {
-        return res.send(it);
-      });
-  });
-
-});
-
-app.get("/getItems", function(req, res) {
-  var Item = mongoose.model("Items", itemSchema);
-  Item.find().exec(function(err, it) {
-    
-    console.log("get mongose item => ", it)
-    return res.send(it);
-  });  
-});
-
-app.get("/getJackpot", function(req, res) {
-  var Jackpot = mongoose.model("Jackpot", jackpotSchema);
-  Jackpot.find({}, function(err, data) {
-    console.log("getJackpot=> ", data);
-    return res.send(data);
-  });
-});
-
-app.post("/setJackpot", function(req, res) {
-  var Jackpot = mongoose.model("Jackpot", jackpotSchema);
-  
-  Jackpot.findOne({ id: req.body.auctionId }, async function(err, _jackpot) {
-    if(!err){
-      if (_jackpot == "undefined" || _jackpot == null) {
-        var nJackpot = new Jackpot({
-          value: req.body.value
-        });
-        await nJackpot.save();
-      } else {
-        _jackpot.value = req.body.value;
-        await _jackpot.save();
-      }      
-      return res.send(true);
-    }
-    else{
-      return res.send(false);
-    }
-  });
-});
-
-app.post("/postAuction", function(req, res) {
-  var Auction = mongoose.model("Auction", auctionSchema);
-  var User = mongoose.model("Users", userSchema);
-  User.findOne({ name: req.body.name }, async function(err, usr) {
-    if (
-      usr != null &&
-      usr.session == req.body.session &&
-      usr.inventory.indexOf(req.body.itemName) != -1
-    ) {
-      var auc = new Auction({
-        name: req.body.itemName,
-        startBid: req.body.price,
-        price: req.body.price,
-        expiry: req.body.expiry,
-        owner: req.body.name,
-        bidOwner: null
-      });
-      await auc.save();
-
-      return res.send("Auction Added");
-    } else {
-      return res.send("Verification Failed");
-    }
-  });
-});
-
-app.post("/bidAuction", function(req, res) {
-  var Auction = mongoose.model("Auction", auctionSchema);
-  var User = mongoose.model("Users", userSchema);
-  Auction.findOne({ id: req.body.auctionId }, function(err, product) {
-    if (product != null)
-      User.findOne({ name: req.body.name }, async function(err, usr) {
-        if (
-          usr != null &&
-          usr.session == req.body.session &&
-          usr.balance >= req.body.bid &&
-          product.price < req.body.bid
-        ) {
-          product.price = req.body.bid;
-          product.bidOwner = usr.name;
-          await product.save();
-
-          return res.send("Auction Added");
-        } else {
-          return res.send("Verification Failed");
-        }
-      });
-  });
-});
-
-app.get("/getAuction", function(req, res) {
-  var Auction = mongoose.model("Auction", auctionSchema);
-  Auction.find({}, function(err, it) {
-    return res.send(it);
-  });
-});
-
-app.post("/test", function(req, res) {
-  
-  fs.readFile("currencyTable.json", "utf8", function readFileCallback( err, data) {
-    if (err) {
-      console.log(err);
-    } else {
-      var obj = JSON.parse(data); //now it an object
-      return res.send(obj.table);
-    }
-  });
-});
-
-app.post("/getNumbers", function(req, res) {
-  fs.readFile("winningNumbers.json", "utf8", function readFileCallback(err, data) {
-    if (err) {
-      console.log(err);
-    } else {
-      var obj = JSON.parse(data); //now it an object
-      return res.send(obj.table);
-    }
-  });
-});
-
-app.post("/setNumbers", function(req, res) {
-  fs.readFile("winningNumbers.json", "utf8", function readFileCallback(err, data) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(req.body.numbers);
-      var obj = JSON.parse(data); //now it an object
-      obj.table = req.body.numbers;
-      var json = JSON.stringify(obj);
-      fs.writeFile(
-        "winningNumbers.json",
-        json,
-        "utf8",
-        function writeFileCallBack(err, data) {
-          if (err) {
-            console.log(err);
-          } else {
-            return res.send(obj.table);
-          }
-        }
-      );
-      // return res.send(obj.table)
-    }
-  });
-});
-
-app.post("/test2", function(req, res) {
-  console.log("FAJO");
-  fs.readFile("currencyTable.json", "utf8", function readFileCallback(err, data) {
-    if (err) {
-      console.log(err);
-    } else {
-      var obj = JSON.parse(data); //now it an object
-      console.log(req.body.currency);
-      console.log(obj.table.findIndex(i => i.currency == req.body.currency));
-      obj.table[
-        obj.table.findIndex(i => i.currency == req.body.currency)
-      ].price = req.body.price;
-      var json = JSON.stringify(obj);
-      fs.writeFile(
-        "currencyTable.json",
-        json,
-        "utf8",
-        function writeFileCallBack(err, data) {
-          if (err) {
-            console.log(err);
-          } else {
-            return res.send(obj.table);
-          }
-        }
-      );
-    }
-  });
-});
+app.use('/', route);
+app.use('/api', api);
 
 app.listen(5001);
 

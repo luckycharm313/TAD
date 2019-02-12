@@ -1,31 +1,226 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
+var mongoose = require('mongoose');
 
+// var Server = require('../models/servers');
+var governorSchema = require('../models/governors').governorSchema;
+var auctionSchema = require('../models/auction').auctionSchema;
+var ticketSchema = require('../models/tickets').ticketSchema;
 
-var Server = require('../models/servers');
-var User = require('../models/users');
-var Ticket = require('../models/tickets');
-var Governor = require('../models/governors');
-var Auction = require('../models/auction');
-var Item = require('../models/items');
+router.post("/createGovernor", function(req, res) {
+    var Governor = mongoose.model("Governor", governorSchema);
+    var response = {
+        status: 200,
+        payload: '',
+        message: ''
+    };
 
+    if (req.body.name == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Name is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.coinbase == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Coinbase is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.state == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'State is undefined'
+        };
+        return res.send(response);
+    }
 
-Server.methods(['get']);//, 'put', 'post', 'delete']);
-Server.register(router, '/servers');
+    Governor.findOne({ coinbase: req.body.coinbase }, async function(err, _governor) {
+        if(err){
+            response = {
+                status: 400,
+                payload: '',
+                message: err
+            }
+            return res.send(response);
+        }
+        else{
+            if (_governor == undefined || _governor == null) {
+                var nGovernor = new Governor({
+                    name: req.body.name,
+                    coinbase: req.body.coinbase,
+                    state: req.body.state
+                });
+                await nGovernor.save();
+                
+                response = {
+                    status: 200,
+                    payload: '',
+                    message: 'Governor was added successfully.'
+                }
 
-User.methods(['get']);//, 'put', 'post', 'delete']);
-User.register(router, '/users');
+                return res.send(response);
+            } else {
+                response = {
+                    status: 300,
+                    payload: '',
+                    message: 'Governor already exists.'
+                }
+                return res.send(response);
+            }
+        }
+    });
+});
 
-Ticket.methods(['get']);//, 'put', 'post', 'delete']);
-Ticket.register(router, '/tickets');
+router.post("/createAuction", function(req, res) {
+    var Auction = mongoose.model("Auction", auctionSchema);
+    var response = {
+        status: 200,
+        payload: '',
+        message: ''
+    };
 
-Governor.methods(['get']);//, 'put', 'post', 'delete']);
-Governor.register(router, '/governors');
+    if (req.body.name == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Name is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.price == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Price is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.ownerCoinbase == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Owner is undefined'
+        };
+        return res.send(response);
+    }
 
-Auction.methods(['get']);//, 'put', 'post', 'delete']);
-Auction.register(router, '/auction');
+    Auction.findOne({ name: req.body.name, price: req.body.price, ownerCoinbase: req.body.ownerCoinbase }, async function(err, _auction) {
+        if(err){
+            response = {
+                status: 400,
+                payload: '',
+                message: err
+            }
+            return res.send(response);
+        }
+        else{
+            if (_auction == undefined || _auction == null) {
+                var nAuction = new Auction({
+                    name: req.body.name,
+                    price: req.body.price,
+                    ownerCoinbase: req.body.ownerCoinbase
+                });
+                await nAuction.save();
+                
+                response = {
+                    status: 200,
+                    payload: '',
+                    message: 'Auction was added successfully.'
+                }
 
-Item.methods(['get']);//, 'put', 'post', 'delete']);
-Item.register(router, '/items');
+                return res.send(response);
+            } else {
+                response = {
+                    status: 300,
+                    payload: '',
+                    message: 'Auction already exists.'
+                }
+                return res.send(response);
+            }
+        }
+    });
+});
+
+router.post("/createTicket", function(req, res) {
+    var Ticket = mongoose.model("Ticket", ticketSchema);
+    var response = {
+        status: 200,
+        payload: '',
+        message: ''
+    };
+
+    if (req.body.name == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Name is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.coinbase == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Coinbase is undefined'
+        };
+        return res.send(response);
+    }
+    
+    if (req.body.numbers == undefined) {
+        response = {
+            status: 401,
+            payload: '',
+            message: 'Numbers is undefined'
+        };
+        return res.send(response);
+    }
+    
+    Ticket.findOne({ name: req.body.name, coinbase: req.body.coinbase, numbers: JSON.parse(req.body.numbers) }, async function(err, _ticket) {
+        if(err){
+            response = {
+                status: 400,
+                payload: '',
+                message: err
+            }
+            return res.send(response);
+        }
+        else{
+            if (_ticket == undefined || _ticket == null) {
+                var nTicket = new Ticket({
+                    name: req.body.name,
+                    coinbase: req.body.coinbase,
+                    numbers: JSON.parse(req.body.numbers)
+                });
+                await nTicket.save();
+                
+                response = {
+                    status: 200,
+                    payload: '',
+                    message: 'Ticket was added successfully.'
+                }
+
+                return res.send(response);
+            } else {
+                response = {
+                    status: 300,
+                    payload: '',
+                    message: 'Ticket already exists.'
+                }
+                return res.send(response);
+            }
+        }
+    });
+});
 
 module.exports = router;

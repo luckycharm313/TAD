@@ -7,12 +7,12 @@ var auctionSchema = new mongoose.Schema({
   startBid: Number,
   price: Number,
   expiry: Number,
-  owner: String,
-  bidOwner: String,
+  ownerCoinbase: String, //coinbase
+  bidOwnerCoinbase: String, //coinbase
   property1: String,
   property2: String,
   property3: String,
-  someId: mongoose.Schema.Types.ObjectId,
+  id: mongoose.Schema.Types.ObjectId,
 });
 
 

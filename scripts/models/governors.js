@@ -3,11 +3,11 @@ var mongoose = restful.mongoose;
 
 
 var governorSchema = new mongoose.Schema({
+  id: mongoose.Schema.Types.ObjectId,
   state: String,
-  someId: mongoose.Schema.Types.ObjectId,
   name: String,
   coinbase: String,
 });
 
 
-module.exports = restful.model('Governor',governorSchema);
+module.exports = restful.model('Governor', governorSchema);

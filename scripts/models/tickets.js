@@ -6,7 +6,7 @@ var ticketSchema = new mongoose.Schema({
   someId: mongoose.Schema.Types.ObjectId,
   name: String,
   coinbase: String,
-  numbers: [Number]
+  numbers: []
 });
 
 

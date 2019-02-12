@@ -1,12 +1,9 @@
 import React, { Component } from "react";
-//import SimpleStorageContract from '../build/contracts/CBR.json'
 import getWeb3 from "./utils/getWeb3";
-//import {ModalContainer, ModalDialog} from 'react-modal-dialog';
 import "rc-slider/assets/index.css";
 // import Ping from "ping.js";
 import MediaQuery from "react-responsive";
 import ping from "web-pingjs";
-//import '../EUservers/Lucifer/public/sc-codec-min-bin.js'
 import { withAlert } from "react-alert";
 import ReactModal from "react-modal";
 import { confirmAlert } from 'react-confirm-alert'; // Import
@@ -36,7 +33,6 @@ const frontend_endPoint = "http://localhost:3000/";
 const backend_endPoint = "http://localhost:5001/";
 
 const SimpleStorageContract = require("../build/contracts/DD.json");
-
 
 class App extends Component {
   constructor(props) {
@@ -81,12 +77,7 @@ class App extends Component {
       wrappedEth: "0",
       itemList: [],
       auctionList: [],
-      ticketList: [
-        { id: "1", user: "0x00000", numbers: [5, 3, 3, 5, 12, 33] },
-        { id: "2", user: "0x00000", numbers: [5, 3, 3, 45, 2, 24] },
-        { id: "3", user: "0x00000", numbers: [5, 3, 1, 5, 22, 13] },
-        { id: "4", user: "0x00000", numbers: [12, 13, 21, 12, 22, 23] }
-      ],
+      ticketList: [],
       winningNumbers: [5, 2, 3, 24, 3, 3],
       convertAmount: 0,
       curCurrency: "",
@@ -94,8 +85,8 @@ class App extends Component {
       showModal: false,
       showtadModal: false,
       showGovModal: false,
-      govName: "",
-      govNumber: 0,
+      govAddress: "",
+      govId: 0,
       currencyVal: 0,
       showCurrencyModal: false,
       showInfoModal: false,
@@ -154,7 +145,7 @@ class App extends Component {
   }
 
   handleGovOpenModal(val) {
-    this.setState({ showGovModal: true, govNumber: val });
+    this.setState({ showGovModal: true, govId: val });
   }
 
   handleGovCloseModal() {
@@ -190,7 +181,7 @@ class App extends Component {
   };
   
   handleGovNameChange(event) {
-    this.setState({ govName: event.target.value });
+    this.setState({ govAddress: event.target.value });
   }
 
   handleCurrencyChange(event) {
@@ -377,18 +368,62 @@ class App extends Component {
       .catch(function(err) {});
 
     fetch(backend_endPoint + "getJackpot/", {
-        method: "get",
-        //mode: 'no-cors',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        this.setState({jackpot: data[0].value, jackpotId:data[0]._id});
-      })
-      .catch(function(err) { console.log(" fetach err ", err)});
+      method: "get",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      this.setState({jackpot: data[0].value, jackpotId:data[0]._id});
+    })
+    .catch(function(err) { console.log(" fetach err ", err)});
+    
+    fetch(backend_endPoint + "getGovs/", {
+      method: "get",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(governors => {
+      console.log("governors => ", governors);
+      this.setState({governors});
+    })
+    .catch(function(err) { console.log(" fetach err ", err)});
+    
+    fetch(backend_endPoint + "getGovs/", {
+      method: "get",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(governors => {
+      console.log("governors => ", governors);
+      this.setState({governors});
+    })
+    .catch(function(err) { console.log(" fetach err ", err)});
+    
+    fetch(backend_endPoint + "getTicket/", {
+      method: "get",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    })
+    .then(response => response.json())
+    .then(ticketList => {
+      this.setState({ticketList});
+    })
+    .catch(function(err) { console.log(" fetach err ", err)});
   }
 
   createItem() {
@@ -415,35 +450,18 @@ class App extends Component {
   }
 
   componentWillMount() {
-    //var that = this;
     getWeb3
       .then(results => {
-        this.setState({
-          web3: results.web3
-        });
-        console.log(results.web3);
-        var that = this;
-        //this.instantiateContract();
-        // results.web3.eth.net.getId().then(function(res) {
-        //   if (res === 3) {
-        //     that.instantiateRopstenContract();
-        //     that.setState({ network: res });
-        //   } else {
-        //     that.instantiateContract();
-        //     //that.scrapeKyber();
-        //   }
-        // });
+        this.setState({ web3: results.web3 });
         results.web3.version.getNetwork((err, netId) => {
           if (netId == 3) {
-            that.instantiateRopstenContract();
-            that.setState({ network: netId });
+            this.instantiateRopstenContract();
+            this.setState({ network: netId });
           } else {
-            that.instantiateRopstenContract();
-            that.setState({ network: netId });
-            // that.instantiateContract();
+            this.instantiateContract();
             //that.scrapeKyber();
           }
-        });
+        }).bind(this);
       })
       .catch(e => {
         console.log("Error finding web3." + e);
@@ -515,12 +533,12 @@ class App extends Component {
         )
       })
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log("data", data);
-        this.setState({ exchangeValues: data });
-      })
-      .catch(function(err) {});
+    .then(response => response.json())
+    .then(data => {
+      console.log("data", data);
+      this.setState({ exchangeValues: data });
+    })
+    .catch(function(err) {});
     // Declaring this for later so we can chain functions on SimpleStorage.
     var simpleStorageInstance;
     // Get accounts.
@@ -528,21 +546,18 @@ class App extends Component {
       simpleStorage
         .at(ropstenAddress)
         .then(instance => {
-          console.log(" account ===> ", accounts);
           simpleStorageInstance = instance;
           this.setState({ coinbase: accounts[0] });
           // Stores a given value, 5 by default.
           return simpleStorageInstance.balanceOf(accounts[0]);
         })
         .then(result => {
-          console.log(result);
-          //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
           return simpleStorageInstance.totalSupply().then(result => {
             console.log("SUPPLY", simpleStorageInstance);
-            console.log((result / Math.pow(10, 18)).toString(10));
             this.setState({
               totalSupply: (result / Math.pow(10, 18)).toString(10)
             });
+            /*
             return simpleStorageInstance.govTax().then(result => {
               console.log("GOV TAX", result.toString(10));
               this.setState({ govTax: result.toString(10) });
@@ -563,8 +578,8 @@ class App extends Component {
                   }
                 });
               });
-            });
-          });
+            }); */
+          }); 
         });
     });
   }
@@ -589,7 +604,6 @@ class App extends Component {
         })
         .then(result => {
           console.log(result.toString(10));
-          //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
           return simpleStorageInstance
             .setGovTax(this.state.govTaxAmount)
             .then(result => {
@@ -609,10 +623,7 @@ class App extends Component {
     const contract = require("truffle-contract");
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
-
-    // Declaring this for later so we can chain functions on SimpleStorage.
     var simpleStorageInstance;
-    // Get accounts.
     this.state.web3.eth.getAccounts((error, accounts) => {
       simpleStorage
         .at(ropstenAddress)
@@ -620,18 +631,13 @@ class App extends Component {
           simpleStorageInstance = instance;
           this.setState({ coinbase: accounts[0] });
           simpleStorage.defaults({ from: accounts[0] });
-          // Stores a given value, 5 by default.
           return simpleStorageInstance.balanceOf(accounts[0]);
         })
         .then(result => {
-          console.log(result);
-          //this.setState({wrappedEth: this.state.web3.utils.fromWei(result.toString(), "ether" )})
           return simpleStorageInstance
             .setGameTax(this.state.tadTaxAmount)
             .then(result => {
               return simpleStorageInstance.tadTax().then(result => {
-                console.log("Tad TAX");
-                console.log(result);
                 this.setState({ tadTax: result.toString(10) });
                 this.handletadCloseModal();
               });
@@ -762,43 +768,24 @@ class App extends Component {
   }
 
   changeGovernor() {
-    const contract = require("truffle-contract");
-
-    const simpleStorage = contract(SimpleStorageContract);
-    simpleStorage.setProvider(this.state.web3.currentProvider);
-
-    // // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance;
-
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage
-        .at(ropstenAddress)
-        .then(instance => {
-          simpleStorageInstance = instance;
-          this.setState({ coinbase: accounts[0] });
-          console.log(accounts[0]);
-
-          simpleStorage.defaults({ from: accounts[0] });
-          console.log("val==>", this.state.govNumber);
-          console.log("governors==>", this.state.governors);
-          // Stores a given value, 5 by default.
-          return simpleStorageInstance.setGovernor(
-            this.state.govNumber,
-            this.state.govName
-          );
-        })
-        .then(result => {
-          var arr = this.state.governors;
-          arr.map(element => {
-            if(element.id == this.state.govNumber){
-              element.name = this.state.govName;
-            }
-          })
-          this.setState({ governors: arr });
-          this.handleGovCloseModal();
-        });
-    });
-    
+    fetch(backend_endPoint + "updateGovs/", {
+      method: "post",
+      //mode: 'no-cors',
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: this.state.govId,
+        coinbase: this.state.govAddress
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      this.setState({ governors: data });
+      this.handleGovCloseModal();
+    })
+    .catch(function(err) {this.handleGovCloseModal();});    
   }
 
   changeCurrency() {
@@ -826,7 +813,7 @@ class App extends Component {
   buttonFormatter(cell, row) {
     return (
       <div onClick={()=>this.handleGovOpenModal(row.id)}>
-        <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+        <FontAwesomeIcon size="lg" color="white" icon="edit" />
       </div>
     );
   }
@@ -834,7 +821,7 @@ class App extends Component {
   entriesAction(cell, row) {
     return (
       <div onClick={()=>this.handleDeleteEntries(row.name)}>
-        <FontAwesomeIcon size="1x" color="white" icon = "trash" />
+        <FontAwesomeIcon size="1x" color="white" icon="trash" />
       </div>
     );
   }
@@ -842,7 +829,7 @@ class App extends Component {
   ticketFormatter(cell, row) {
     return (
       <div>
-        {cell[0]} {cell[1]} {cell[2]} {cell[3]} {cell[4]} {cell[5]}
+        {cell[0]}&nbsp;&nbsp;{cell[1]}&nbsp;&nbsp;{cell[2]}&nbsp;&nbsp;{cell[3]}&nbsp;&nbsp;{cell[4]}&nbsp;&nbsp;{cell[5]}
       </div>
     );
   }
@@ -850,7 +837,7 @@ class App extends Component {
   buttonCurrencyFormatter(cell, row) {
     return (
       <div onClick={()=>this.handleCurrencyOpenModal(row.currency)}>
-        <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+        <FontAwesomeIcon size="lg" color="white" icon="edit" />
       </div>
     );
   }
@@ -942,7 +929,6 @@ class App extends Component {
 
   render() {
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
-    console.log("tiketlist=>", this.state.ticketList)
     const panels = [
       <main
         style={{
@@ -955,83 +941,24 @@ class App extends Component {
         }}
         className="container"
       >
-        <h2
-          style={{
-            position: "absolute",
-            right: "0px",
-            top: "0px",
-            padding: "5px"
-          }}
-          onClick={() => this.switchPanel(1)}
-        >
-          LOTTERY
-        </h2>
-        <h2
-          style={{
-            position: "absolute",
-            right: "200px",
-            top: "0px",
-            padding: "5px"
-          }}
-          onClick={() => this.switchPanel(2)}
-        >
-          AUCTION
-        </h2>
+        <h2 style={{ position: "absolute", right: "0px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(1)} > LOTTERY </h2>
+        <h2 style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(2)} > AUCTION </h2>
         <h1>THE AMERICAN DREAM</h1>
-        <div
-          style={{
-            display: "flex",
-            position: "relative",
-            height: "calc(100% - 30px)"
-          }}
-        >
+        <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
           <div style={{ width: "60%" }}>
             <div className="box" style={{ height: "62%", overflow: "scroll" }}>
               <h2>GOVENORS</h2>
-              <BootstrapTable
-                data={this.state.governors}
-                height="200px"
-                scrollTop={"Top"}
-                dataAlign="center"
-                striped
-                hover
-              >
-                <TableHeaderColumn
-                  dataAlign="center"
-                  isKey
-                  width={"25px"}
-                  dataField="state"
-                >
-                  STATE
-                </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="name">
-                  Name
-                </TableHeaderColumn>
-                {/* <TableHeaderColumn
-                  dataAlign="center"
-                  width={"20px"}
-                  dataField="p"
-                /> */}
-                <TableHeaderColumn
-                  dataAlign="center"
-                  dataFormat={this.buttonFormatter}
-                  
-                  dataField="id"
-                >
-                Action
-                </TableHeaderColumn>
+              <BootstrapTable data={this.state.governors} height="200px" scrollTop={"Top"} striped={true} hover={true} >
+                <TableHeaderColumn dataAlign="center" isKey dataField="state" width="15%"> STATE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataField="name" width="20%"> NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataField="coinbase"> ADDRESS </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataFormat={this.buttonFormatter} dataField="id" width="15%" > ACTION </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
             <div className="box">
               <h2>TAXATION</h2>
-              <div
-                style={{
-                  display: "flex",
-                  borderBottom: "2px solid #4c4c4c",
-                  padding: "0 5px"
-                }}
-              >
+              <div style={{ display: "flex", borderBottom: "2px solid #4c4c4c", padding: "0 5px" }}>
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <h3>TAD</h3>
                 </div>
@@ -1040,7 +967,7 @@ class App extends Component {
                 </div>
                 <div style={{ flex: 1, textAlign: "center", margin: "auto" }}>
                   <div onClick={()=>this.handleTadOpenModal()}>
-                    <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+                    <FontAwesomeIcon size="lg" color="white" icon="edit" />
                   </div>
                 </div>
               </div>
@@ -1053,7 +980,7 @@ class App extends Component {
                 </div>
                 <div style={{ flex: 1, textAlign: "center", margin: "auto" }}>
                   <div onClick={()=>this.handleOpenModal()}>
-                    <FontAwesomeIcon size="lg" color="white" icon = "edit" />
+                    <FontAwesomeIcon size="lg" color="white" icon="edit" />
                   </div>
                 </div>
               </div>
@@ -1063,64 +990,29 @@ class App extends Component {
           <div style={{ width: "40%" }}>
             <div className="box" style={{ textAlign: "center" }}>
               <h2>DD IN CIRCULATION</h2>
-              <h3>
-                {parseInt(this.state.totalSupply, 10)
-                  .toFixed(0)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                <span style={{color:"#d8d51a"}}>&nbsp;DD</span>
+              <h3> { parseInt(this.state.totalSupply, 10).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                <span style={{color:"#d8d51a"}}>&nbsp;&nbsp;DD</span>
               </h3>
               <h3>
-                <span style={{color:"#d8d51a"}}>$&nbsp;</span>
-                {(parseInt(this.state.totalSupply, 10) * parseInt(this.state.exchangeValues[0].price, 10))
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                <span style={{color:"#d8d51a"}}>$&nbsp;&nbsp;</span>
+                {(parseInt(this.state.totalSupply, 10) * parseInt(this.state.exchangeValues[0].price, 10)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </h3>
             </div>
 
             <div className="box">
               <h2>CREATE DD</h2>
               <div style={{ padding: "5px", textAlign: "center" }}>
-                <input
-                  onChange={this.handleChange}
-                  value={this.state.addAmount}
-                  style={{
-                    backgroundColor: "grey",
-                    border: "none",
-                    borderRadius: "4px"
-                  }}
-                />
+                <input onChange={this.handleChange} value={this.state.addAmount} style={{ backgroundColor: "grey", border: "none", borderRadius: "4px" }} />
                 <br />
                 <br /> <button onClick={this.addSupply}>ADD</button>
               </div>
             </div>
             <div style={{ overflow: "scroll", height: "40%" }} className="box">
               <h2>$ VALUES</h2>
-              <BootstrapTable
-                data={this.state.exchangeValues}
-                height="200"
-                scrollTop={"Top"}
-                dataAlign="center"
-                striped
-                hover
-              >
-                <TableHeaderColumn
-                  dataAlign="center"
-                  isKey
-                  dataField="currency"
-                >
-                  Currency
-                </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="price">
-                  Price
-                </TableHeaderColumn>
-                <TableHeaderColumn
-                  dataAlign="center"
-                  dataFormat={this.buttonCurrencyFormatter}
-                  dataField="id"
-                >
-                Action
-                </TableHeaderColumn>
+              <BootstrapTable data={this.state.exchangeValues} height="200" scrollTop={"Top"} striped hover >
+                <TableHeaderColumn dataAlign="center" isKey dataField="currency" width="30%" > CURRENCY </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataField="price" width="40%"> PRICE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataFormat={this.buttonCurrencyFormatter} dataField="id" width="30%" > ACTION </TableHeaderColumn>
               </BootstrapTable>
             </div>
           </div>
@@ -1138,62 +1030,17 @@ class App extends Component {
         }}
         className="container"
       >
-        <h2
-          style={{
-            position: "absolute",
-            right: "0px",
-            top: "0px",
-            padding: "5px"
-          }}
-          onClick={() => this.switchPanel(0)}
-        >
-          GOVERNANCE
-        </h2>
-        <h2
-          style={{
-            position: "absolute",
-            right: "200px",
-            top: "0px",
-            padding: "5px"
-          }}
-          onClick={() => this.switchPanel(2)}
-        >
-          AUCTION
-        </h2>
+        <h2 style={{ position: "absolute", right: "0px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(0)} > GOVERNANCE </h2>
+        <h2 style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(2)} > AUCTION </h2>
         <h1>THE AMERICAN DREAM</h1>
-        <div
-          style={{
-            display: "flex",
-            position: "relative",
-            height: "calc(100% - 30px)"
-          }}
-        >
-          <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
+          <div style={{ width:"30%" }}>
             <div className="box" style={{ height: "57%", overflow: "scroll" }}>
               <h2>ENTRIES</h2>
-              <BootstrapTable
-                data={this.state.ticketList}
-                height="200px"
-                scrollTop={"Top"}
-                dataAlign="center"
-                striped
-                hover
-              >
-                <TableHeaderColumn
-                  dataAlign="center"
-                  width={"15px"}
-                  dataField="user"
-                  isKey
-                >
-                  Name
-                </TableHeaderColumn>
-                <TableHeaderColumn
-                  dataAlign="center"
-                  dataFormat={this.ticketFormatter}
-                  dataField="numbers"
-                >
-                  Numbers
-                </TableHeaderColumn>
+              <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} striped hover >
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="name" > NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="40%" dataField="coinbase" isKey > ADDRESS </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="40%" dataFormat={this.ticketFormatter} dataField="numbers" > Numbers </TableHeaderColumn>
                 {/* <TableHeaderColumn
                   dataAlign="center"
                   dataFormat={this.buttonFormatter}
@@ -1203,98 +1050,38 @@ class App extends Component {
             </div>
           </div>
 
-          <div style={{ flex: 1 }}>
+          <div style={{ width:"40%" }}>
             <div className="box" style={{ textAlign: "center" }}>
               <h2>SET WINNING NUMBERS</h2>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(0)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(0)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[0]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(0)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(0)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(1)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(1)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[1]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(1)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(1)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(2)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(2)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[2]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(2)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(2)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(3)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(3)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[3]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(3)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(3)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(4)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(4)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[4]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(4)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(4)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <div style={{ display: "inline-block", padding: "5px" }}>
-                <p
-                  onClick={() => this.winningNumberUp(5)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9650;
-                </p>
+                <p onClick={() => this.winningNumberUp(5)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
                 <div className="lotto">{this.state.winningNumbers[5]}</div>
-                <p
-                  onClick={() => this.winningNumberDown(5)}
-                  style={{ cursor: "pointer", color: "white" }}
-                >
-                  &#9660;
-                </p>
+                <p onClick={() => this.winningNumberDown(5)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
               </div>
               <br />
               <button onClick={this.setNumbers}>SET</button>
@@ -1304,12 +1091,12 @@ class App extends Component {
             <div className="box">
               <h2>PROJECTED PAYOUT</h2>
               <div style={{ padding: "5px", textAlign: "center" }}>
-                <h2>{this.calcPayout(this.state.winningNumbers)} <span style={{color:"#d8d51a"}}>$</span></h2>
+                <h2><span style={{color:"#d8d51a"}}>$&nbsp;&nbsp;</span>{this.calcPayout(this.state.winningNumbers)}</h2>
               </div>
             </div>
           </div>
 
-          <div style={{ flex: 1 }}>
+          <div style={{ width: "30%" }}>
             <div style={{ height: "40%" }} className="box">
               <h2>CURRENT JACKPOT</h2>
               <div style={{
@@ -1317,128 +1104,58 @@ class App extends Component {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center"
-              }}>
-              
-                <span
-                  style={{
-                    fontSize: "30px",
-                    color: "white",
-                    fontWeight: "bold",
-                    marginRight: "5px",
-                    textAlign: "left"
-                }}>$</span>
+              }}>              
+                <span style={{ fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "5px", textAlign: "left" }}>$</span>
                 <input
                     ref={(input) => { this.jackpotInput = input; }} 
-                    value={
-                      this.state.isEditJackPot?this.state.jackpot:
-                      this.state.jackpot
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
-                      
+                    value={ this.state.isEditJackPot?this.state.jackpot: this.state.jackpot.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
                     onChange={this.onChangeJackpot}
-                    style={{
-                      backgroundColor: "transparent",
-                      border: "none",
-                      fontSize: "30px",
-                      color: "white",
-                      fontWeight: "bold",
-                      marginRight: "20px",
-                      width: "70%",
-                      textAlign: "left"
-                    }}
-                    readOnly = {this.state.isEditJackPot?false:true }                    
-                  />
+                    style={{ backgroundColor: "transparent", border: "none", fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "20px", width: "70%", textAlign: "left"}}
+                    readOnly={this.state.isEditJackPot?false:true }/>
                   
-                <div onClick={()=>{ 
+                <div onClick={()=>{
                   if(this.state.isEditJackPot)
                     return this.saveJackPot();
                   else
                     return this.editJackPot();
                   }}>
-                  <FontAwesomeIcon size="lg" color="white" icon = {this.state.isEditJackPot?"save":"edit" } />
+                  <FontAwesomeIcon size="lg" color="white" icon={this.state.isEditJackPot?"save":"edit" } />
                 </div>
-              </div>
-              
+              </div>              
             </div>
           </div>
         </div>
       </main>,
 
       <main
-        style={{
-          backgroundColor: "#2c2c2c",
-          backgroundImage: `'url("${frontend_endPoint}usFlag.jpg")'`,
-          backgroundSize: "cover",
-          height: "100vh",
-          margin: 0,
-          paddingTop: "10px"
-        }}
+        style={{ backgroundColor: "#2c2c2c", backgroundImage: `'url("${frontend_endPoint}usFlag.jpg")'`, backgroundSize: "cover", height: "100vh", margin: 0, paddingTop: "10px" }}
         className="container"
       >
         <h2
-          style={{
-            position: "absolute",
-            right: "0px",
-            top: "0px",
-            padding: "5px"
-          }}
-          onClick={() => this.switchPanel(0)}
-        >
+          style={{ position: "absolute", right: "0px", top: "0px", padding: "5px" }}
+          onClick={() => this.switchPanel(0)}>
           GOVERNANCE
         </h2>
         <h2
-          style={{
-            position: "absolute",
-            right: "200px",
-            top: "0px",
-            padding: "5px"
-          }}
+          style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }}
           onClick={() => this.switchPanel(1)}
         >
           LOTTERY
         </h2>
         <h1>THE AMERICAN DREAM</h1>
-        <div
-          style={{
-            display: "flex",
-            position: "relative",
-            height: "calc(100% - 30px)"
-          }}
-        >
+        <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
           <div style={{ flex: 1 }}>
             <div className="box" style={{ height: "57%", overflow: "scroll" }}>
-              <div style = {{position:"relative"}}>
+              <div style={{position:"relative"}}>
                 <h2>ITEMS</h2>
-                <div style = {{position:"absolute", right: "22px", top: "12px"}} onClick={()=>this.deleteAllItems()}>
-                  <FontAwesomeIcon size="lg" color="white" icon = "trash" />
+                <div style={{position:"absolute", right: "22px", top: "12px"}} onClick={()=>this.deleteAllItems()}>
+                  <FontAwesomeIcon size="lg" color="white" icon="trash" />
                 </div>
               </div>
-              <BootstrapTable
-                data={this.state.itemList}
-                height="200px"
-                scrollTop={"Top"}
-                dataAlign="center"
-                striped
-                hover
-              >
-                <TableHeaderColumn
-                  dataAlign="center"
-                  isKey
-                  width={"25px"}
-                  dataField="name"
-                >
-                  Name
-                </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="price" >
-                  Price
-                </TableHeaderColumn>
-                <TableHeaderColumn
-                  dataAlign="center"
-                  dataFormat={this.entriesAction}
-                  dataField="id"
-                >
-                Action
-                </TableHeaderColumn>
+              <BootstrapTable data={this.state.itemList} height="200px" scrollTop={"Top"} striped hover>
+                <TableHeaderColumn dataAlign="center" width="35%" isKey dataField="name"> NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="35%" dataField="price" > PRICE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="30%" dataFormat={this.entriesAction} dataField="id"> ACTION </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
@@ -1473,32 +1190,9 @@ class App extends Component {
           <div style={{ flex: 1 }}>
             <div style={{ height: "50%" }} className="box">
               <h2>AUCTIONS</h2>
-              <BootstrapTable
-                data={this.state.auctionList}
-                height="200px"
-                scrollTop={"Top"}
-                dataAlign="center"
-                striped
-                hover
-              >
-                <TableHeaderColumn
-                  dataAlign="center"
-                  isKey
-                  width={"25px"}
-                  dataField="id"
-                >
-                  ID
-                </TableHeaderColumn>
-                <TableHeaderColumn
-                  dataAlign="center"
-                  width={"15px"}
-                  dataField="user"
-                >
-                  Name
-                </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="price" >
-                  Price
-                </TableHeaderColumn>
+              <BootstrapTable data={this.state.auctionList} height="200px" scrollTop={"Top"} striped hover >
+                <TableHeaderColumn dataAlign="center" width="50%" dataField="name" isKey> NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="50%" dataField="price" > PRICE </TableHeaderColumn>
               </BootstrapTable>
             </div>
           </div>
@@ -1507,9 +1201,6 @@ class App extends Component {
     ];
     return (
       <div className="App">
-        {/*<nav className="navbar pure-menu pure-menu-horizontal">
-                          <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
-                        </nav>*/}
         <MediaQuery query="(min-device-width: 900px)">
           {panels[this.state.panel]}
 
@@ -1518,31 +1209,15 @@ class App extends Component {
             onRequestClose={this.handletadCloseModal}
             contentLabel="Controls"
             style={{
-              overlay: {
-                backgroundColor: "rgba(0,0,0,0.2)"
-              },
-              content: {
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.8)",
-                margin: "15% calc(15% - 60px)",
-                width: "70%",
-                height: "45%",
-                border: "none",
-                borderRadius: "5px",
-                textAlign: "center"
-              }
+              overlay: { backgroundColor: "rgba(0,0,0,0.2)"},
+              content: { color: "white", backgroundColor: "rgba(0,0,0,0.8)", margin: "15% calc(15% - 60px)", width: "70%", height: "45%", border: "none", borderRadius: "5px", textAlign: "center"}
             }}
           >
             <h2>Set TAD TAX</h2>
             <input
               onChange={this.handleTadChange}
               value={this.state.tadTaxAmount}
-              style={{
-                backgroundColor: "grey",
-                border: "none",
-                borderRadius: "4px"
-              }}
-            />
+              style={{ backgroundColor: "grey", border: "none", borderRadius: "4px", padding: 10 }} />
             <br />
             <button style={{ marginTop: 10 }} onClick={this.changeTadTax.bind(this)}>SET</button>
           </ReactModal>
@@ -1552,31 +1227,15 @@ class App extends Component {
             onRequestClose={this.handleCloseModal}
             contentLabel="Controls"
             style={{
-              overlay: {
-                backgroundColor: "rgba(0,0,0,0.2)"
-              },
-              content: {
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.8)",
-                margin: "15% calc(15% - 60px)",
-                width: "70%",
-                height: "45%",
-                border: "none",
-                borderRadius: "5px",
-                textAlign: "center"
-              }
+              overlay: { backgroundColor: "rgba(0,0,0,0.2)"},
+              content: { color: "white", backgroundColor: "rgba(0,0,0,0.8)", margin: "15% calc(15% - 60px)", width: "70%", height: "45%", border: "none", borderRadius: "5px", textAlign: "center"}
             }}
           >
             <h2>Set GOV TAX</h2>
             <input
               onChange={this.handleGovChange}
               value={this.state.govTaxAmount}
-              style={{
-                backgroundColor: "grey",
-                border: "none",
-                borderRadius: "4px"
-              }}
-            />
+              style={{ backgroundColor: "grey", border: "none", borderRadius: "4px", padding: 10}} />
             <br />
             <button style={{ marginTop: 10 }} onClick={this.changeGovTax.bind(this)}>SET</button>
           </ReactModal>
@@ -1586,31 +1245,15 @@ class App extends Component {
             onRequestClose={this.handleGovCloseModal}
             contentLabel="Controls"
             style={{
-              overlay: {
-                backgroundColor: "rgba(0,0,0,0.2)"
-              },
-              content: {
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.8)",
-                margin: "15% calc(15% - 60px)",
-                width: "70%",
-                height: "45%",
-                border: "none",
-                borderRadius: "5px",
-                textAlign: "center"
-              }
+              overlay: { backgroundColor: "rgba(0,0,0,0.2)"},
+              content: { color: "white", backgroundColor: "rgba(0,0,0,0.8)", margin: "15% calc(15% - 60px)", width: "70%", height: "45%", border: "none", borderRadius: "5px", textAlign: "center"}
             }}
           >
             <h2>Set GOVERNOR</h2>
             <input
               onChange={this.handleGovNameChange}
-              value={this.state.govName}
-              style={{
-                backgroundColor: "grey",
-                border: "none",
-                borderRadius: "4px"
-              }}
-            />
+              value={this.state.govAddress}
+              style={{ backgroundColor: "grey", border: "none", borderRadius: "4px", padding: 10, width:"50%" }} />
             <br />
             <button style={{ marginTop: 10 }} onClick={this.changeGovernor.bind(this)}>SET</button>
           </ReactModal>
@@ -1620,31 +1263,15 @@ class App extends Component {
             onRequestClose={this.handleCurrencyCloseModal}
             contentLabel="Controls"
             style={{
-              overlay: {
-                backgroundColor: "rgba(0,0,0,0.2)"
-              },
-              content: {
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.8)",
-                margin: "15% calc(15% - 60px)",
-                width: "70%",
-                height: "45%",
-                border: "none",
-                borderRadius: "5px",
-                textAlign: "center"
-              }
+              overlay: { backgroundColor: "rgba(0,0,0,0.2)"},
+              content: { color: "white", backgroundColor: "rgba(0,0,0,0.8)", margin: "15% calc(15% - 60px)", width: "70%", height: "45%", border: "none", borderRadius: "5px", textAlign: "center"}
             }}
           >
             <h2>SET CURRENCY</h2>
             <input
               onChange={this.handleCurrencyChange}
               value={this.state.currencyVal}
-              style={{
-                backgroundColor: "grey",
-                border: "none",
-                borderRadius: "4px"
-              }}
-            />
+              style={{ backgroundColor: "grey", border: "none", borderRadius: "4px", padding: 10}} />
             <br />
             <button style={{ marginTop: 10 }} onClick={this.changeCurrency.bind(this)}>SET</button>
           </ReactModal>
