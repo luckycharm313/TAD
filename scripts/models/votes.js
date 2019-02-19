@@ -10,6 +10,12 @@ var voteSchema = new mongoose.Schema({
   isVoted: Boolean,
   voteId: String,
   userState: String,
+  voteTime: { 
+    type: Date, 
+    default: function() {
+        return Date.now();
+    } 
+  }
 });
 
 

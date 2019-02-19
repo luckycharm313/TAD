@@ -4,9 +4,18 @@ var mongoose = restful.mongoose;
 
 var electionSchema = new mongoose.Schema({
   electionId: mongoose.Schema.Types.ObjectId, // foreign key with votes
-  title: String, 
-  startTime: String, 
-  endTime: String,
+  startTime:  { 
+    type: Date, 
+    default: function() {
+        return Date.now();
+    } 
+  }, 
+  endTime:  { 
+    type: Date, 
+    default: function() {
+        return Date.now();
+    } 
+  },
 });
 
 

@@ -4,9 +4,13 @@ var mongoose = restful.mongoose;
 
 var governorSchema = new mongoose.Schema({
   id: mongoose.Schema.Types.ObjectId,
-  state: String,
   name: String,
   coinbase: String,
+
+  userName: String,
+  userCode: String,
+  state: { type: String, default: 'California' },
+  isGovernor: { type: Boolean, default: false }
 });
 
 
