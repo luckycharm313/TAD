@@ -3,13 +3,16 @@ var mongoose = restful.mongoose;
 
 
 var userSchema = new mongoose.Schema({
-  name: String,
+  userId: mongoose.Schema.Types.ObjectId,
+  userName: String,
+  userCode: String, // unique key
+  userState: String,
+  
   coinbase: String,
   inventory: [String],
   balance: Number,
   session: String,
-  gid: String,
-  someId: mongoose.Schema.Types.ObjectId,
+  gid: String,  
   password: String,
   rating: Number,
   reviews: Number,

@@ -352,21 +352,6 @@ class App extends Component {
       })
       .catch(function(err) {});
 
-    fetch(backend_endPoint + "getAuction/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log("data" + data);
-        this.setState({ auctionList: data });
-      })
-      .catch(function(err) {});
-
     fetch(backend_endPoint + "getJackpot/", {
       method: "get",
       //mode: 'no-cors',
@@ -381,7 +366,7 @@ class App extends Component {
     })
     .catch(function(err) { console.log(" fetach err ", err)});
     
-    fetch(backend_endPoint + "getGovs/", {
+    fetch(backend_endPoint + "api/getGovernors/", {
       method: "get",
       //mode: 'no-cors',
       headers: {
@@ -390,13 +375,14 @@ class App extends Component {
       }
     })
     .then(response => response.json())
-    .then(governors => {
-      console.log("governors => ", governors);
-      this.setState({governors});
+    .then(result => {
+      if(result.status == 200){
+        this.setState({governors: result.payload})
+      }
     })
     .catch(function(err) { console.log(" fetach err ", err)});
     
-    fetch(backend_endPoint + "getGovs/", {
+    fetch(backend_endPoint + "api/getAuctions/", {
       method: "get",
       //mode: 'no-cors',
       headers: {
@@ -405,13 +391,15 @@ class App extends Component {
       }
     })
     .then(response => response.json())
-    .then(governors => {
-      console.log("governors => ", governors);
-      this.setState({governors});
+    .then(result => {
+      if(result.status == 200){
+        this.setState({auctionList: result.payload})
+      }
     })
-    .catch(function(err) { console.log(" fetach err ", err)});
+    .catch(function(err) {});
+
     
-    fetch(backend_endPoint + "getTicket/", {
+    fetch(backend_endPoint + "api/getTickets/", {
       method: "get",
       //mode: 'no-cors',
       headers: {
@@ -420,8 +408,10 @@ class App extends Component {
       }
     })
     .then(response => response.json())
-    .then(ticketList => {
-      this.setState({ticketList});
+    .then(result => {
+      if(result.status == 200){
+        this.setState({ticketList: result.payload})
+      }
     })
     .catch(function(err) { console.log(" fetach err ", err)});
   }
@@ -1034,7 +1024,7 @@ class App extends Component {
         <h2 style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(2)} > AUCTION </h2>
         <h1>THE AMERICAN DREAM</h1>
         <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
-          <div style={{ width:"30%" }}>
+          <div style={{ width:"50%" }}>
             <div className="box" style={{ height: "57%", overflow: "scroll" }}>
               <h2>ENTRIES</h2>
               <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} striped hover >
@@ -1050,7 +1040,7 @@ class App extends Component {
             </div>
           </div>
 
-          <div style={{ width:"40%" }}>
+          <div style={{ width:"50%" }}>
             <div className="box" style={{ textAlign: "center" }}>
               <h2>SET WINNING NUMBERS</h2>
               <div style={{ display: "inline-block", padding: "5px" }}>
@@ -1094,36 +1084,36 @@ class App extends Component {
                 <h2><span style={{color:"#d8d51a"}}>$&nbsp;&nbsp;</span>{this.calcPayout(this.state.winningNumbers)}</h2>
               </div>
             </div>
-          </div>
 
-          <div style={{ width: "30%" }}>
-            <div style={{ height: "40%" }} className="box">
-              <h2>CURRENT JACKPOT</h2>
-              <div style={{
-                    marginTop: "10px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center"
-              }}>              
-                <span style={{ fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "5px", textAlign: "left" }}>$</span>
-                <input
-                    ref={(input) => { this.jackpotInput = input; }} 
-                    value={ this.state.isEditJackPot?this.state.jackpot: this.state.jackpot.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
-                    onChange={this.onChangeJackpot}
-                    style={{ backgroundColor: "transparent", border: "none", fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "20px", width: "70%", textAlign: "left"}}
-                    readOnly={this.state.isEditJackPot?false:true }/>
-                  
-                <div onClick={()=>{
-                  if(this.state.isEditJackPot)
-                    return this.saveJackPot();
-                  else
-                    return this.editJackPot();
-                  }}>
-                  <FontAwesomeIcon size="lg" color="white" icon={this.state.isEditJackPot?"save":"edit" } />
-                </div>
-              </div>              
-            </div>
-          </div>
+            {/* <div style={{ width: "30%" }}> */}
+              <div style={{ height: "40%" }} className="box">
+                <h2>CURRENT JACKPOT</h2>
+                <div style={{
+                      marginTop: "10px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                }}>              
+                  <span style={{ fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "5px", textAlign: "left" }}>$</span>
+                  <input
+                      ref={(input) => { this.jackpotInput = input; }} 
+                      value={ this.state.isEditJackPot?this.state.jackpot: this.state.jackpot.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
+                      onChange={this.onChangeJackpot}
+                      style={{ backgroundColor: "transparent", border: "none", fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "20px", width: "70%", textAlign: "left"}}
+                      readOnly={this.state.isEditJackPot?false:true }/>
+                    
+                  <div onClick={()=>{
+                    if(this.state.isEditJackPot)
+                      return this.saveJackPot();
+                    else
+                      return this.editJackPot();
+                    }}>
+                    <FontAwesomeIcon size="lg" color="white" icon={this.state.isEditJackPot?"save":"edit" } />
+                  </div>
+                </div>              
+              </div>
+            {/* </div> */}
+          </div>          
         </div>
       </main>,
 

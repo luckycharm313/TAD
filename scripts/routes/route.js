@@ -9,7 +9,7 @@ var itemSchema = require('../models/items').itemSchema;
 var auctionSchema = require('../models/auction').auctionSchema;
 var jackpotSchema = require('../models/jackpot').jackpotSchema;
 var ticketSchema = require('../models/tickets').ticketSchema;
-
+/*
 function generateUID() {
     var firstPart = (Math.random() * 46656) | 0;
     var secondPart = (Math.random() * 46656) | 0;
@@ -51,7 +51,7 @@ router.post("/login", function(req, res) {
         } else return res.send("No USER Found");
     });
 });
-
+*/
 router.post("/createItem", function(req, res) {
     var Item = mongoose.model("Items", itemSchema);
 
@@ -74,7 +74,7 @@ router.post("/createItem", function(req, res) {
         });
     });
 });
-
+/*
 router.post("/purchaseItem", function(req, res) {
     var User = mongoose.model("Users", userSchema);
     var Item = mongoose.model("Items", itemSchema);
@@ -90,7 +90,7 @@ router.post("/purchaseItem", function(req, res) {
         });
     });
 });
-
+*/
 router.post("/deleteItem", function(req, res) {
     var Item = mongoose.model("Items", itemSchema);
 
@@ -123,13 +123,13 @@ router.get("/getItems", function(req, res) {
         return res.send(it);
     });  
 });
-
+/*
 router.get("/getGovs", function(req, res) {
     var Governor = mongoose.model("Governor", governorSchema);
     Governor.find().exec(function(err, _governor) {
         return res.send(_governor);
     });  
-});
+}); */
 
 router.post("/updateGovs", function(req, res) {
     var Governor = mongoose.model("Governor", governorSchema);
@@ -173,7 +173,7 @@ router.post("/setJackpot", function(req, res) {
         }
     });
 });
-
+/*
 router.post("/postAuction", function(req, res) {
     var Auction = mongoose.model("Auction", auctionSchema);
     var User = mongoose.model("Users", userSchema);
@@ -219,7 +219,7 @@ router.get("/getAuction", function(req, res) {
     Auction.find({}, function(err, it) {
         return res.send(it);
     });
-});
+}); */
 
 router.post("/test", function(req, res) {
 
@@ -282,12 +282,12 @@ router.post("/test2", function(req, res) {
         }
     });
 });
-
+/*
 router.get("/getTicket", function(req, res) {
     var Ticket = mongoose.model("Ticket", ticketSchema);
     Ticket.find({}, function(err, data) {
         return res.send(data);
     });
-})
+}) */
 
 module.exports = router;
