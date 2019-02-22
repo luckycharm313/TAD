@@ -9,7 +9,7 @@ var governorSchema = new mongoose.Schema({
 
   userName: String,
   userCode: String,
-  state: { type: String, default: 'California' },
+  state: String,
   isGovernor: { type: Boolean, default: false }
 });
 

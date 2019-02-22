@@ -1,4 +1,5 @@
-export const states = [
+ 
+const states = [
     "Alabama",
     "Alaska",
     "Arizona",
@@ -50,3 +51,5 @@ export const states = [
     "Wisconsin",
     "Wyoming"
   ];
+
+  module.exports.states = states; 

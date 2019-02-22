@@ -263,3 +263,19 @@ background-color: #fd0;
 ::-webkit-input-placeholder {
   color: #eee;
 }
+.main-container{
+  padding: 15px 10px;
+}
+.row{
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-bottom: 14px !important;
+}
+.vertical-center{ display: flex; align-items: center}
+.body-red{background-color: #9e2f2f; padding-top: 10px; padding-bottom: 10px; height: 150px;}
+.text-white{ font-size: 14px; color: white; font-weight: 600; }
+.text-message-white{ border: 2px solid white; width: 100%; }
+.btn-submit-white{font-size: 13px; background-color: transparent;color: white;font-weight: 600;}
+
+.body-grey{background-color: grey; padding-top: 10px; padding-bottom: 10px; height: 150px;}
+.body-blue{background-color: #464690; padding-top: 10px; padding-bottom: 10px; height: 150px;}

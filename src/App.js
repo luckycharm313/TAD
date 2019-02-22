@@ -9,12 +9,14 @@ import ReactModal from "react-modal";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 import $ from "jquery";
+import Textarea from 'react-textarea-autosize';
 
 import "./css/oswald.css";
 import "./css/open-sans.css";
 import "./css/pure-min.css";
 import "./App.css";
-import { states } from "./constant";
+import {ApiProvider} from './ApiProvider.js'
+// import { states } from "./constant";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -85,7 +87,7 @@ class App extends Component {
       showModal: false,
       showtadModal: false,
       showGovModal: false,
-      govAddress: "",
+      userCode: "",
       govId: 0,
       currencyVal: 0,
       showCurrencyModal: false,
@@ -95,28 +97,32 @@ class App extends Component {
       widgetOpen: true,
       profileOpen: false,
       isEditJackPot: false,
+
+      DPRmsg: '',
+      IAMHIMmsg: '',
+      PRESIDENTmsg: '',
     };
-    this.handleOpenModal = this.handleOpenModal.bind(this);
+    // this.handleOpenModal = this.handleOpenModal.bind(this);
     this.handleCloseModal = this.handleCloseModal.bind(this);
-    this.handleTadOpenModal = this.handleTadOpenModal.bind(this);
+    // this.handleTadOpenModal = this.handleTadOpenModal.bind(this);
     this.handleTadCloseModal = this.handleTadCloseModal.bind(this);
     this.handleGovOpenModal = this.handleGovOpenModal.bind(this);
     this.handleGovCloseModal = this.handleGovCloseModal.bind(this);
     this.handleCurrencyOpenModal = this.handleCurrencyOpenModal.bind(this);
     this.handleCurrencyCloseModal = this.handleCurrencyCloseModal.bind(this);
     this.handleInfoOpenModal = this.handleInfoOpenModal.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.addSupply = this.addSupply.bind(this);
+    // this.handleChange = this.handleChange.bind(this);
+    // this.addSupply = this.addSupply.bind(this);
     this.buttonFormatter = this.buttonFormatter.bind(this);
     this.buttonCurrencyFormatter = this.buttonCurrencyFormatter.bind(this);
     this.handleGovNameChange = this.handleGovNameChange.bind(this);
     this.handleCurrencyChange = this.handleCurrencyChange.bind(this);
-    this.switchPanel = this.switchPanel.bind(this);
-    this.winningNumberUp = this.winningNumberUp.bind(this);
-    this.winningNumberDown = this.winningNumberDown.bind(this);
+    // this.switchPanel = this.switchPanel.bind(this);
+    // this.winningNumberUp = this.winningNumberUp.bind(this);
+    // this.winningNumberDown = this.winningNumberDown.bind(this);
     this.calcPayout = this.calcPayout.bind(this);
-    this.randomizeWinner = this.randomizeWinner.bind(this);
-    this.setNumbers = this.setNumbers.bind(this);
+    // this.randomizeWinner = this.randomizeWinner.bind(this);
+    // this.setNumbers = this.setNumbers.bind(this);
     this.createItem = this.createItem.bind(this);
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
@@ -125,20 +131,16 @@ class App extends Component {
     this.onChangeJackpot = this.onChangeJackpot.bind(this);
     this.entriesAction = this.entriesAction.bind(this);
     this.handleDeleteEntries = this.handleDeleteEntries.bind(this);
-    this.deleteAllItems = this.deleteAllItems.bind(this);
+    // this.deleteAllItems = this.deleteAllItems.bind(this);
   }
 
-  handleOpenModal() {
-    this.setState({ showModal: true });
-  }
+  handleOpenModal = ()=> this.setState({ showModal: true });
 
   handleCloseModal() {
     this.setState({ showModal: false });
   }
 
-  handleTadOpenModal() {
-    this.setState({ showtadModal: true });
-  }
+  handleTadOpenModal = () => this.setState({ showtadModal: true });
 
   handleTadCloseModal() {
     this.setState({ showtadModal: false });
@@ -168,9 +170,7 @@ class App extends Component {
     this.setState({ showInfoModal: false });
   }
 
-  handleChange(event) {
-    this.setState({ addAmount: event.target.value });
-  }
+  handleChange = (event)=> this.setState({ addAmount: event.target.value });
 
   handleGovChange(event) {
     this.setState({ govTaxAmount: event.target.value });
@@ -181,7 +181,7 @@ class App extends Component {
   };
   
   handleGovNameChange(event) {
-    this.setState({ govAddress: event.target.value });
+    this.setState({ userCode: event.target.value });
   }
 
   handleCurrencyChange(event) {
@@ -281,7 +281,7 @@ class App extends Component {
     })
   }
 
-  deleteAllItems() {
+  deleteAllItems = ()=> {
     confirmAlert({
       title: '',
       message: 'Are you sure you want to delete all items?',
@@ -314,129 +314,65 @@ class App extends Component {
     })
   }
 
-
-  componentDidMount() {
+  async componentDidMount() {
     ReactModal.setAppElement("body");
-
-    fetch(backend_endPoint + "getNumbers/", {
-      method: "post",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    try {
+      var winningNumbers = await ApiProvider(backend_endPoint + "getNumbers/", "POST", {
         currency: this.state.curCurrency,
         price: this.state.currencyVal
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log("data" + data);
-        this.setState({ winningNumbers: data });
-      })
-      .catch(function(err) {});
+      });
 
-    fetch(backend_endPoint + "getItems/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log("itemList: ", data);
-        this.setState({ itemList: data });
-      })
-      .catch(function(err) {});
+      console.log("winningNumbers", winningNumbers);
+      var itemList = await ApiProvider(backend_endPoint + "getItems/", "GET",null);
+      console.log("itemList", itemList);
+      
+      var jackpot = await ApiProvider(backend_endPoint + "getJackpot/", "GET",null);
+      console.log("jackpot", jackpot);
 
-    fetch(backend_endPoint + "getJackpot/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      this.setState({jackpot: data[0].value, jackpotId:data[0]._id});
-    })
-    .catch(function(err) { console.log(" fetach err ", err)});
-    
-    fetch(backend_endPoint + "api/getGovernors/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    })
-    .then(response => response.json())
-    .then(result => {
-      if(result.status == 200){
-        this.setState({governors: result.payload})
-      }
-    })
-    .catch(function(err) { console.log(" fetach err ", err)});
-    
-    fetch(backend_endPoint + "api/getAuctions/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      }
-    })
-    .then(response => response.json())
-    .then(result => {
-      if(result.status == 200){
-        this.setState({auctionList: result.payload})
-      }
-    })
-    .catch(function(err) {});
+      this.setState({ winningNumbers, itemList, jackpot: jackpot[0].value, jackpotId:jackpot[0]._id });
 
-    
-    fetch(backend_endPoint + "api/getTickets/", {
-      method: "get",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
+      var governors = await ApiProvider(backend_endPoint + "api/governor/all/", "GET",null);
+      console.log("governors", governors);
+      if(governors.status == 200){
+        this.setState({governors: governors.payload});   
       }
-    })
-    .then(response => response.json())
-    .then(result => {
-      if(result.status == 200){
-        this.setState({ticketList: result.payload})
+      else{
+        alert(governors.message);
       }
-    })
-    .catch(function(err) { console.log(" fetach err ", err)});
+
+      var auctionList = await ApiProvider(backend_endPoint + "getAuctions/", "GET",null);
+      if(auctionList.status == 200){
+        this.setState({auctionList: auctionList.payload})
+      }
+      else{
+        alert(auctionList.message);        
+      }
+
+      var ticketList = await ApiProvider(backend_endPoint + "getTickets/", "GET",null);
+      if(ticketList.status == 200){
+        this.setState({ticketList: ticketList.payload})
+      }
+      else{
+        alert(ticketList.message);        
+      }
+      
+    } catch (error) {
+      console.log("error => "+error);
+      alert(error);
+    }
   }
 
-  createItem() {
-      fetch(backend_endPoint + "createItem/", {
-        method: "post",
-        //mode: 'no-cors',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: this.state.itemName,
-          price: this.state.itemPrice,
-          category: this.state.itemCategory
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ itemList: data });        
-      })
-      .catch(function(err) {
-        console.log("create item err " , err);
+  async createItem() {
+    try {
+      var itemList = await ApiProvider(backend_endPoint + "createItem/", "POST", {
+        name: this.state.itemName,
+        price: this.state.itemPrice,
+        category: this.state.itemCategory
       });
+      this.setState({ itemList, itemName: '', itemPrice: '', itemCategory: '' });      
+    } catch (error) {
+      alert(error);
+    }
   }
 
   componentWillMount() {
@@ -451,31 +387,22 @@ class App extends Component {
             this.instantiateContract();
             //that.scrapeKyber();
           }
-        }).bind(this);
+        });
       })
       .catch(e => {
         console.log("Error finding web3." + e);
       });
   }
 
-  setNumbers() {
-    fetch(backend_endPoint + "setNumbers/", {
-      method: "post",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+  setNumbers = async () => {
+    try {
+      await ApiProvider(backend_endPoint + "setNumbers/", "POST", {
         numbers: this.state.winningNumbers,
         price: this.state.currencyVal
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log("data" + data);
-      })
-      .catch(function(err) {});
+      });      
+    } catch (error) {
+      alert(error);
+    }
   }
 
   instantiateContract() {
@@ -636,7 +563,7 @@ class App extends Component {
     });
   }
 
-  addSupply() {
+  addSupply = () => {
     const contract = require("truffle-contract");
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
@@ -757,25 +684,23 @@ class App extends Component {
     //return this.setState({ wrappedEth: result.c[0] })
   }
 
-  changeGovernor() {
-    fetch(backend_endPoint + "updateGovs/", {
-      method: "post",
-      //mode: 'no-cors',
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+  async changeGovernor() {
+    try {
+      var governors = await ApiProvider(backend_endPoint + "api/governor/update/", "POST", {
         id: this.state.govId,
-        coinbase: this.state.govAddress
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      this.setState({ governors: data });
+        userCode: this.state.userCode
+      });
       this.handleGovCloseModal();
-    })
-    .catch(function(err) {this.handleGovCloseModal();});    
+      if(governors.status == 200){
+        this.setState({ governors: governors.payload });
+      }
+      else{
+        alert(governors.message)
+      }
+    } catch (error) {
+      this.handleGovCloseModal();
+      alert(error);
+    }
   }
 
   changeCurrency() {
@@ -802,7 +727,7 @@ class App extends Component {
 
   buttonFormatter(cell, row) {
     return (
-      <div onClick={()=>this.handleGovOpenModal(row.id)}>
+      <div onClick={()=>this.handleGovOpenModal(row._id)}>
         <FontAwesomeIcon size="lg" color="white" icon="edit" />
       </div>
     );
@@ -832,9 +757,7 @@ class App extends Component {
     );
   }
 
-  switchPanel(val) {
-    this.setState({ panel: val });
-  }
+  switchPanel = (val) => this.setState({ panel: val });
 
   getMatchingElementCount(left, right) {
     let clonedLeft = []
@@ -893,7 +816,7 @@ class App extends Component {
     return payout;
   }
 
-  randomizeWinner() {
+  randomizeWinner = () => {
     var arr = [0, 0, 0, 0, 0, 0];
     for (var x = 0; x < 6; x++) {
       arr[x] = (Math.random() * 50).toFixed(0);
@@ -902,19 +825,65 @@ class App extends Component {
     this.setState({ winningNumbers: arr });
   }
 
-  winningNumberUp(val) {
+  winningNumberUp = (val)=> {
     var arr = this.state.winningNumbers;
     arr[val] = (parseInt(arr[val], 10) + parseInt(1, 10)) % 51;
     this.setState({ winningNumbers: arr });
   }
 
-  winningNumberDown(val) {
+  winningNumberDown = (val)=> {
     var arr = this.state.winningNumbers;
     if (arr[val] > 0) arr[val] = (parseInt(arr[val], 10) - parseInt(1, 10)) % 51;
     else {
       arr[val] = 50;
     }
     this.setState({ winningNumbers: arr });
+  }
+
+  handleDPRChange =(event)=> this.setState({DPRmsg: event.target.value});
+  handleIAMHIMChange =(event)=> this.setState({IAMHIMmsg: event.target.value});
+  handlePRESIDENTChange =(event)=> this.setState({PRESIDENTmsg: event.target.value});
+
+  sendMessage = async (value) => {
+    var params = {}
+    if(value == 1){
+      params = {
+        message: this.state.DPRmsg,
+        sender: value
+      }
+    }
+    else if( value == 2){
+      params = {
+        message: this.state.IAMHIMmsg,
+        sender: value
+      }
+    }
+    else{
+      params = {
+        message: this.state.PRESIDENTmsg,
+        sender: value
+      }
+    }
+
+    try {
+      var result = await ApiProvider(backend_endPoint + "api/message/send", "POST", params);
+      if(result.status == 200){
+        if(value == 1){
+          this.setState({DPRmsg: ''});
+        }
+        else if( value == 2){
+          this.setState({IAMHIMmsg: ''});
+        }
+        else{
+          this.setState({PRESIDENTmsg: ''});
+        }
+      }
+      else{
+        alert(result.message)
+      }
+    } catch (error) {
+      console.log({error});
+    }
   }
 
   render() {
@@ -935,14 +904,14 @@ class App extends Component {
         <h2 style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(2)} > AUCTION </h2>
         <h1>THE AMERICAN DREAM</h1>
         <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
-          <div style={{ width: "60%" }}>
+          <div style={{ width: "40%" }}>
             <div className="box" style={{ height: "62%", overflow: "scroll" }}>
               <h2>GOVENORS</h2>
               <BootstrapTable data={this.state.governors} height="200px" scrollTop={"Top"} striped={true} hover={true} >
-                <TableHeaderColumn dataAlign="center" isKey dataField="state" width="15%"> STATE </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="name" width="20%"> NAME </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataField="coinbase"> ADDRESS </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" dataFormat={this.buttonFormatter} dataField="id" width="15%" > ACTION </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" isKey dataField="state" width="25%"> STATE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataField="userCode" width="30%"> GAMER CODE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" dataField="userName" width="30%"> NAME </TableHeaderColumn>                
+                <TableHeaderColumn dataAlign="center" dataFormat={this.buttonFormatter} dataField="_id" width="15%" > ACTION </TableHeaderColumn>
               </BootstrapTable>
             </div>
 
@@ -977,7 +946,7 @@ class App extends Component {
             </div>
           </div>
 
-          <div style={{ width: "40%" }}>
+          <div style={{ width: "30%" }}>
             <div className="box" style={{ textAlign: "center" }}>
               <h2>DD IN CIRCULATION</h2>
               <h3> { parseInt(this.state.totalSupply, 10).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -992,9 +961,9 @@ class App extends Component {
             <div className="box">
               <h2>CREATE DD</h2>
               <div style={{ padding: "5px", textAlign: "center" }}>
-                <input onChange={this.handleChange} value={this.state.addAmount} style={{ backgroundColor: "grey", border: "none", borderRadius: "4px" }} />
+                <input onChange={(e)=>this.handleChange(e)} value={this.state.addAmount} style={{ backgroundColor: "grey", border: "none", borderRadius: "4px" }} />
                 <br />
-                <br /> <button onClick={this.addSupply}>ADD</button>
+                <br /> <button onClick={()=>this.addSupply()}>ADD</button>
               </div>
             </div>
             <div style={{ overflow: "scroll", height: "40%" }} className="box">
@@ -1004,6 +973,43 @@ class App extends Component {
                 <TableHeaderColumn dataAlign="center" dataField="price" width="40%"> PRICE </TableHeaderColumn>
                 <TableHeaderColumn dataAlign="center" dataFormat={this.buttonCurrencyFormatter} dataField="id" width="30%" > ACTION </TableHeaderColumn>
               </BootstrapTable>
+            </div>
+          </div>
+          <div style={{ width: "40%" }}>
+            <div className="box">
+              <h2>MESSAGE</h2>
+              <div className = "main-container">
+                <div className = "row body-red">
+                  <div className = "col-md-3"> <span className = "text-white"> DPR </span> </div>
+                  <div className="col-md-6">
+                    {/* <Textarea minRows={1} maxRows={6} value={this.state.DPRmsg} onChange={(e)=>this.handleDPRChange(e)} className = "text-message-white"/> */}
+                    <textarea rows={6} value={this.state.DPRmsg} onChange={(e)=>this.handleDPRChange(e)} className = "text-message-white"/>
+                  </div>
+                  <div className="col-md-3">
+                    <button className = "btn-submit-white" onClick={()=>this.sendMessage(1)}>SUBMIT</button>
+                  </div>
+                </div>
+                <div className = "row body-grey">
+                  <div className = "col-md-3"> <span className = "text-white"> IAMHIM </span> </div>
+                  <div className="col-md-6">
+                    {/* <Textarea minRows={1} maxRows={6} value={this.state.IAMHIMmsg} onChange={(e)=>this.handleIAMHIMChange(e)} className = "text-message-white"/> */}
+                    <textarea rows={6} value={this.state.IAMHIMmsg} onChange={(e)=>this.handleIAMHIMChange(e)} className = "text-message-white"/>
+                  </div>
+                  <div className="col-md-3">
+                    <button className = "btn-submit-white" onClick={()=>this.sendMessage(2)}>SUBMIT</button>
+                  </div>
+                </div>
+                <div className = "row body-blue">
+                  <div className = "col-md-3"> <span className = "text-white"> PRESIDENT </span> </div>
+                  <div className="col-md-6">
+                    {/* <Textarea minRows={1} maxRows={6} value={this.state.PRESIDENTmsg} onChange={(e)=>this.handlePRESIDENTChange(e)} className = "text-message-white"/> */}
+                    <textarea rows={6} value={this.state.PRESIDENTmsg} onChange={(e)=>this.handlePRESIDENTChange(e)} className = "text-message-white"/>
+                  </div>
+                  <div className="col-md-3">
+                    <button className = "btn-submit-white" onClick={()=>this.sendMessage(0)}>SUBMIT</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1043,39 +1049,41 @@ class App extends Component {
           <div style={{ width:"50%" }}>
             <div className="box" style={{ textAlign: "center" }}>
               <h2>SET WINNING NUMBERS</h2>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(0)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[0]}</div>
-                <p onClick={() => this.winningNumberDown(0)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+              <div style={{ padding: 10 }}>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(0)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[0]}</div>
+                  <p onClick={() => this.winningNumberDown(0)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(1)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[1]}</div>
+                  <p onClick={() => this.winningNumberDown(1)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(2)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[2]}</div>
+                  <p onClick={() => this.winningNumberDown(2)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(3)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[3]}</div>
+                  <p onClick={() => this.winningNumberDown(3)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(4)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[4]}</div>
+                  <p onClick={() => this.winningNumberDown(4)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <div style={{ display: "inline-block", padding: "5px" }}>
+                  <p onClick={() => this.winningNumberUp(5)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                  <div className="lotto">{this.state.winningNumbers[5]}</div>
+                  <p onClick={() => this.winningNumberDown(5)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                </div>
+                <br />
+                <button onClick={() => this.setNumbers()} style={{marginRight: 10}}>SET</button>
+                <button onClick={() => this.randomizeWinner()}>RANDOMIZE</button>
               </div>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(1)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[1]}</div>
-                <p onClick={() => this.winningNumberDown(1)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-              </div>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(2)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[2]}</div>
-                <p onClick={() => this.winningNumberDown(2)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-              </div>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(3)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[3]}</div>
-                <p onClick={() => this.winningNumberDown(3)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-              </div>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(4)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[4]}</div>
-                <p onClick={() => this.winningNumberDown(4)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-              </div>
-              <div style={{ display: "inline-block", padding: "5px" }}>
-                <p onClick={() => this.winningNumberUp(5)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                <div className="lotto">{this.state.winningNumbers[5]}</div>
-                <p onClick={() => this.winningNumberDown(5)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-              </div>
-              <br />
-              <button onClick={this.setNumbers}>SET</button>
-              <button onClick={this.randomizeWinner}>RANDOMIZE</button>
             </div>
 
             <div className="box">
@@ -1242,7 +1250,7 @@ class App extends Component {
             <h2>Set GOVERNOR</h2>
             <input
               onChange={this.handleGovNameChange}
-              value={this.state.govAddress}
+              value={this.state.userCode}
               style={{ backgroundColor: "grey", border: "none", borderRadius: "4px", padding: 10, width:"50%" }} />
             <br />
             <button style={{ marginTop: 10 }} onClick={this.changeGovernor.bind(this)}>SET</button>

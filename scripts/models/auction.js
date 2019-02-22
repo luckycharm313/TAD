@@ -3,16 +3,16 @@ var mongoose = restful.mongoose;
 
 
 var auctionSchema = new mongoose.Schema({
-  name: String,
-  startBid: Number,
-  price: Number,
-  expiry: Number,
-  ownerCoinbase: String, //coinbase
-  bidOwnerCoinbase: String, //coinbase
-  property1: String,
-  property2: String,
-  property3: String,
-  id: mongoose.Schema.Types.ObjectId,
+  auctionId: mongoose.Schema.Types.ObjectId,
+  itemName: String,
+  itemCategory: String,
+  minPrice: {type: Number, default: 0},
+  bidPrice: {type: Number, default: 0},
+  winnerPrice: {type: Number, default: 0},
+  ownerGamerCode: String, //coinbase
+  biderGamerCode: String, //coinbase
+  expiry: String,
+  createdAt: String,
 });
 
 

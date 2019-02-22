@@ -7,8 +7,7 @@ var voteSchema = new mongoose.Schema({
   userName: String,
   userCode: String, // foreign key with usermodel
   candidacyCode: String,
-  isVoted: Boolean,
-  voteId: String,
+  candidacyName: String,
   userState: String,
   voteTime: { 
     type: Date, 

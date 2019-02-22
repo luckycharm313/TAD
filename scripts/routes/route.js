@@ -213,13 +213,13 @@ router.post("/bidAuction", function(req, res) {
         });
     });
 });
-
+*/
 router.get("/getAuction", function(req, res) {
     var Auction = mongoose.model("Auction", auctionSchema);
     Auction.find({}, function(err, it) {
         return res.send(it);
     });
-}); */
+}); 
 
 router.post("/test", function(req, res) {
 

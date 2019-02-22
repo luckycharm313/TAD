@@ -36,6 +36,7 @@ var upload = multer();
 var app = express();
 var api = require('./routes/api');
 var route = require('./routes/route');
+var api_temp = require('./routes/api_temp');
 
 /****database */
 var mongoose = require('mongoose');
@@ -81,6 +82,7 @@ app.use(function(req, res, next) {
 
 
 app.use('/', route);
+app.use('/', api_temp);
 app.use('/api', api);
 
 app.listen(5001);
@@ -374,5 +376,4 @@ detect(DEFAULT_PORT).then(port => {
     console.log(chalk.red('Something is already running on port ' + DEFAULT_PORT + '.'));
   }
 });
-
 */
