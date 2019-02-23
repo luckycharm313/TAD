@@ -29,5 +29,6 @@ router.get("/election/getElectionPeroid", election.getPeroid);
 router.post("/auction/bid", auction.bid);
 router.post("/auction/post", auction.post);
 router.get("/auction/get", auction.get);
+router.get("/auction/result", auction.result);
 
 module.exports = router;

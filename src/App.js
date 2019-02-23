@@ -340,7 +340,7 @@ class App extends Component {
         alert(governors.message);
       }
 
-      var auctionList = await ApiProvider(backend_endPoint + "getAuctions/", "GET",null);
+      var auctionList = await ApiProvider(backend_endPoint + "api/auction/result/", "GET",null);
       if(auctionList.status == 200){
         this.setState({auctionList: auctionList.payload})
       }
@@ -1142,7 +1142,7 @@ class App extends Component {
         </h2>
         <h1>THE AMERICAN DREAM</h1>
         <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
-          <div style={{ flex: 1 }}>
+          <div style={{ width: "45%" }}>
             <div className="box" style={{ height: "57%", overflow: "scroll" }}>
               <div style={{position:"relative"}}>
                 <h2>ITEMS</h2>
@@ -1185,12 +1185,15 @@ class App extends Component {
             </div>
           </div>
 
-          <div style={{ flex: 1 }}>
-            <div style={{ height: "50%" }} className="box">
+          <div style={{ width: "55%" }}>
+            <div style={{ height: "70%" }} className="box">
               <h2>AUCTIONS</h2>
               <BootstrapTable data={this.state.auctionList} height="200px" scrollTop={"Top"} striped hover >
-                <TableHeaderColumn dataAlign="center" width="50%" dataField="name" isKey> NAME </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" width="50%" dataField="price" > PRICE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="itemCategory" > ITEM CATEGORY </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="itemName" > ITEM NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="biderName" > WINNER NAME </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="biderGamerCode" isKey> WINNER CODE </TableHeaderColumn>
+                <TableHeaderColumn dataAlign="center" width="20%" dataField="bidPrice" > WINNER PRICE </TableHeaderColumn>
               </BootstrapTable>
             </div>
           </div>
