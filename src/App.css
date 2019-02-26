@@ -25,7 +25,7 @@ button, html input[type=button], input[type=reset], input[type=submit] {
 
 .lotto{
 
-border:1px solid #aa1d1d; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:30px;font-family:"thebold", helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;text-shadow: -1px -1px 0 rgba(0,0,0,0.3);font-weight:bold; color: #FFFFFF;
+border:1px solid #aa1d1d; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:27px;font-family:"thebold", helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;text-shadow: -1px -1px 0 rgba(0,0,0,0.3);font-weight:bold; color: #FFFFFF;
  background-color: #DA2525; background-image: -webkit-gradient(linear, left top, left bottom, from(#DA2525), to(#6d0019));
  background-image: -webkit-linear-gradient(top, #DA2525, #6d0019);
  background-image: -moz-linear-gradient(top, #DA2525, #6d0019);
@@ -266,11 +266,16 @@ background-color: #fd0;
 .main-container{
   padding: 15px 10px;
 }
+.text-align-center div p{
+  margin: 10px 0 !important;
+}
 .row{
   margin-right: 0 !important;
   margin-left: 0 !important;
   margin-bottom: 14px !important;
 }
+.text-align-center{text-align: center}
+.p-h-10{padding-top: 10px; padding-bottom: 10px}
 .vertical-center{ display: flex; align-items: center}
 .body-red{background-color: #9e2f2f; padding-top: 10px; padding-bottom: 10px; height: 150px;}
 .text-white{ font-size: 14px; color: white; font-weight: 600; }
@@ -279,3 +284,8 @@ background-color: #fd0;
 
 .body-grey{background-color: grey; padding-top: 10px; padding-bottom: 10px; height: 150px;}
 .body-blue{background-color: #464690; padding-top: 10px; padding-bottom: 10px; height: 150px;}
+.payout{margin-top: 15px; margin-bottom: 0; margin-left: 0; margin-right: 0}
+.input-scratcher{width: 100%}
+.winner-6{ background-color: red}
+.winner-5{ background-color: #464690}
+.winner-4{ background-color: grey}

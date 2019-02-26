@@ -80,7 +80,8 @@ class App extends Component {
       itemList: [],
       auctionList: [],
       ticketList: [],
-      winningNumbers: [5, 2, 3, 24, 3, 3],
+      winningNumbers: [0, 0, 0, 0, 0, 0],
+      lastWinningNumber: [0, 0, 0, 0, 0, 0],
       convertAmount: 0,
       curCurrency: "",
       wrapReq: 0.005,
@@ -317,19 +318,20 @@ class App extends Component {
   async componentDidMount() {
     ReactModal.setAppElement("body");
     try {
-      var winningNumbers = await ApiProvider(backend_endPoint + "getNumbers/", "POST", {
-        currency: this.state.curCurrency,
-        price: this.state.currencyVal
-      });
-
+      var winningNumbers = await ApiProvider(backend_endPoint + "api/lottery/lastWinningNumber/", "GET", null);
+      
       console.log("winningNumbers", winningNumbers);
+
       var itemList = await ApiProvider(backend_endPoint + "getItems/", "GET",null);
       console.log("itemList", itemList);
       
       var jackpot = await ApiProvider(backend_endPoint + "getJackpot/", "GET",null);
       console.log("jackpot", jackpot);
 
-      this.setState({ winningNumbers, itemList, jackpot: jackpot[0].value, jackpotId:jackpot[0]._id });
+      this.setState({ itemList, jackpot: jackpot[0].value, jackpotId:jackpot[0]._id, 
+        lastWinningNumber: winningNumbers.payload.winingNumbers,
+        //  winningNumbers: winningNumbers.payload.winingNumbers
+       });
 
       var governors = await ApiProvider(backend_endPoint + "api/governor/all/", "GET",null);
       console.log("governors", governors);
@@ -348,7 +350,7 @@ class App extends Component {
         alert(auctionList.message);        
       }
 
-      var ticketList = await ApiProvider(backend_endPoint + "getTickets/", "GET",null);
+      var ticketList = await ApiProvider(backend_endPoint + "api/lottery/getPickData/", "GET",null);
       if(ticketList.status == 200){
         this.setState({ticketList: ticketList.payload})
       }
@@ -395,11 +397,27 @@ class App extends Component {
   }
 
   setNumbers = async () => {
+
+    // try {
+    //   await ApiProvider(backend_endPoint + "setNumbers/", "POST", {
+    //     numbers: this.state.winningNumbers,
+    //     price: this.state.currencyVal
+    //   });      
+    // } catch (error) {
+    //   alert(error);
+    // }
+    
     try {
-      await ApiProvider(backend_endPoint + "setNumbers/", "POST", {
-        numbers: this.state.winningNumbers,
-        price: this.state.currencyVal
-      });      
+      var winningNumbers = await ApiProvider(backend_endPoint + "api/lottery/setWinnerNumber", "POST", {
+        winningNumbers: this.state.winningNumbers,
+      });
+      
+      if(winningNumbers.status == 200){
+        this.setState({lastWinningNumber: winningNumbers.payload.winingNumbers})
+      }
+      else{
+        alert(winningNumbers.message);        
+      }
     } catch (error) {
       alert(error);
     }
@@ -759,6 +777,27 @@ class App extends Component {
 
   switchPanel = (val) => this.setState({ panel: val });
 
+  trClassFormat = (rowData, rIndex)=> {
+    var level = this.getTicketLevel(rowData.numbers);
+    if(level == 6){
+      return 'winner-6';
+    }
+    else if(level == 5){
+      return 'winner-5';
+    }
+    else if( level == 4){
+      return 'winner-4';
+    }
+    else{
+      return null;
+    }
+   
+  }
+  
+  getTicketLevel = (ticket) => {
+    return this.getMatchingElementCount(ticket, this.state.winningNumbers)
+  }
+
   getMatchingElementCount(left, right) {
     let clonedLeft = []
     left.forEach(element => {
@@ -804,13 +843,13 @@ class App extends Component {
     });
 
     if(isLevel == 6){
-      payout = parseInt(this.state.jackpot);
+      payout = (parseInt(this.state.jackpot, 10)).toFixed(2);
     }
     else if (isLevel == 5){
-      payout = (parseInt(this.state.jackpot) * 0.1 );
+      payout = (parseInt(this.state.jackpot, 10) * 0.1 ).toFixed(2);
     }
     else if(isLevel == 4){
-      payout = (parseInt(this.state.jackpot) * 0.01);
+      payout = (parseInt(this.state.jackpot, 10) * 0.01).toFixed(2);
     }
 
     return payout;
@@ -1029,75 +1068,200 @@ class App extends Component {
         <h2 style={{ position: "absolute", right: "0px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(0)} > GOVERNANCE </h2>
         <h2 style={{ position: "absolute", right: "200px", top: "0px", padding: "5px" }} onClick={() => this.switchPanel(2)} > AUCTION </h2>
         <h1>THE AMERICAN DREAM</h1>
-        <div style={{ display: "flex", position: "relative", height: "calc(100% - 30px)" }} >
-          <div style={{ width:"50%" }}>
-            <div className="box" style={{ height: "57%", overflow: "scroll" }}>
-              <h2>ENTRIES</h2>
-              <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} striped hover >
-                <TableHeaderColumn dataAlign="center" width="20%" dataField="name" > NAME </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" width="40%" dataField="coinbase" isKey > ADDRESS </TableHeaderColumn>
-                <TableHeaderColumn dataAlign="center" width="40%" dataFormat={this.ticketFormatter} dataField="numbers" > Numbers </TableHeaderColumn>
-                {/* <TableHeaderColumn
-                  dataAlign="center"
-                  dataFormat={this.buttonFormatter}
-                  dataField="id"
-                /> */}
-              </BootstrapTable>
-            </div>
-          </div>
-
-          <div style={{ width:"50%" }}>
-            <div className="box" style={{ textAlign: "center" }}>
-              <h2>SET WINNING NUMBERS</h2>
-              <div style={{ padding: 10 }}>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(0)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[0]}</div>
-                  <p onClick={() => this.winningNumberDown(0)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+        <div style={{ height: "calc(100% - 30px)" }} >
+          <div className="row">
+            <div className="col-md-8">
+              <div className="box m-h-55" style={{ maxHeight: "52vh"}}>
+                <h2>LOTTO</h2>
+                <div className="row p-h-10">
+                  <div className="col-md-6" style={{overflow:"scroll"}}>
+                    <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} trClassName={this.trClassFormat}>
+                      <TableHeaderColumn dataAlign="center" width="20%" dataField="userName" > USER </TableHeaderColumn>
+                      <TableHeaderColumn dataAlign="center" width="40%" dataField="userCode" isKey > USER CODE </TableHeaderColumn>
+                      <TableHeaderColumn dataAlign="center" width="40%" dataFormat={this.ticketFormatter} dataField="numbers" > NUMBERS </TableHeaderColumn>
+                    </BootstrapTable>
+                  </div>
+                  <div className="col-md-6" style={{overflow:"scroll"}}>
+                    <div className="text-align-center">
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(0)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[0]}</div>
+                        <p onClick={() => this.winningNumberDown(0)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(1)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[1]}</div>
+                        <p onClick={() => this.winningNumberDown(1)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(2)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[2]}</div>
+                        <p onClick={() => this.winningNumberDown(2)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(3)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[3]}</div>
+                        <p onClick={() => this.winningNumberDown(3)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(4)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[4]}</div>
+                        <p onClick={() => this.winningNumberDown(4)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <div style={{ display: "inline-block", padding: "5px" }}>
+                        <p onClick={() => this.winningNumberUp(5)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
+                        <div className="lotto">{this.state.winningNumbers[5]}</div>
+                        <p onClick={() => this.winningNumberDown(5)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
+                      </div>
+                      <br />
+                      <button className="btn btn-success"  style={{width: "100px", marginRight: 10}} onClick={() => this.setNumbers()}>SET</button>
+                      <button className="btn btn-success"  style={{width: "150px"}} onClick={() => this.randomizeWinner()}>RANDOMIZE</button>
+                    </div>
+                    <div className="box payout">
+                      <h2>PROJECTED PAYOUT</h2>
+                      <div style={{ padding: "5px", textAlign: "center" }}>
+                        <h2><span style={{color:"#d8d51a"}}>$&nbsp;&nbsp;</span>{this.calcPayout(this.state.winningNumbers)}</h2>
+                      </div>
+                    </div>
+                    <div className="box payout">
+                      <h2>LAST WINNING NUMBERS</h2>
+                      <div style={{ padding: "5px", textAlign: "center" }}>
+                        <h2>{this.state.lastWinningNumber[0]+
+                        ", "+this.state.lastWinningNumber[1]+
+                        ", "+this.state.lastWinningNumber[2]+
+                        ", "+this.state.lastWinningNumber[3]+
+                        ", "+this.state.lastWinningNumber[4]+
+                        ", "+this.state.lastWinningNumber[5]
+                        }</h2>
+                      </div>
+                    </div>    
+                  </div>
+                </div>                
+              </div>
+              <div className="box" style={{ maxHeight: "33vh"/*, overflow: "scroll"*/}}>
+                <h2>SCRATCHER</h2>
+                <div className="row">
+                  <div className="col-md-6" style={{overflow:"scroll"}}>
+                    <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} striped hover >
+                      <TableHeaderColumn dataAlign="center" width="20%" dataField="userName" > NAME </TableHeaderColumn>
+                      <TableHeaderColumn dataAlign="center" width="40%" dataField="userCode" isKey > USER CODE </TableHeaderColumn>
+                      <TableHeaderColumn dataAlign="center" width="40%" dataFormat={this.ticketFormatter} dataField="numbers" > NUMBERS </TableHeaderColumn>
+                    </BootstrapTable>
+                  </div>
+                  <div className="col-md-6" style={{overflow:"scroll"}}>
+                    <div className="p-h-10">
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher"></input>
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row text-align-center">
+                        <button className="btn btn-success" style={{width: "200px"}} onClick={() => this.randomizeWinner()}>SET</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(1)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[1]}</div>
-                  <p onClick={() => this.winningNumberDown(1)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-                </div>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(2)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[2]}</div>
-                  <p onClick={() => this.winningNumberDown(2)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-                </div>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(3)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[3]}</div>
-                  <p onClick={() => this.winningNumberDown(3)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-                </div>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(4)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[4]}</div>
-                  <p onClick={() => this.winningNumberDown(4)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-                </div>
-                <div style={{ display: "inline-block", padding: "5px" }}>
-                  <p onClick={() => this.winningNumberUp(5)} style={{ cursor: "pointer", color: "white" }} > &#9650; </p>
-                  <div className="lotto">{this.state.winningNumbers[5]}</div>
-                  <p onClick={() => this.winningNumberDown(5)} style={{ cursor: "pointer", color: "white" }} > &#9660; </p>
-                </div>
-                <br />
-                <button onClick={() => this.setNumbers()} style={{marginRight: 10}}>SET</button>
-                <button onClick={() => this.randomizeWinner()}>RANDOMIZE</button>
               </div>
             </div>
-
-            <div className="box">
-              <h2>PROJECTED PAYOUT</h2>
-              <div style={{ padding: "5px", textAlign: "center" }}>
-                <h2><span style={{color:"#d8d51a"}}>$&nbsp;&nbsp;</span>{this.calcPayout(this.state.winningNumbers)}</h2>
-              </div>
-            </div>
+            <div className="col-md-4">
+            
 
             {/* <div style={{ width: "30%" }}> */}
               <div style={{ height: "40%" }} className="box">
                 <h2>CURRENT JACKPOT</h2>
                 <div style={{
                       marginTop: "10px",
+                      marginBottom: "10px",
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center"
@@ -1121,7 +1285,8 @@ class App extends Component {
                 </div>              
               </div>
             {/* </div> */}
-          </div>          
+            </div>
+          </div>       
         </div>
       </main>,
 

@@ -4,9 +4,12 @@ var mongoose = restful.mongoose;
 
 var ticketSchema = new mongoose.Schema({
   someId: mongoose.Schema.Types.ObjectId,
-  name: String,
-  coinbase: String,
-  numbers: []
+  userName: String,
+  userCode: String,
+  numbers: [],
+  winingNumbers:[],
+  isWinner: {type: Boolean, default: false},
+  createdAt: String,
 });
 
 
