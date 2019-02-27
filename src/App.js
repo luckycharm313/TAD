@@ -80,6 +80,8 @@ class App extends Component {
       itemList: [],
       auctionList: [],
       ticketList: [],
+      scratcherNumbers: [],
+      scratcherList: [],
       winningNumbers: [0, 0, 0, 0, 0, 0],
       lastWinningNumber: [0, 0, 0, 0, 0, 0],
       convertAmount: 0,
@@ -358,6 +360,22 @@ class App extends Component {
         alert(ticketList.message);        
       }
       
+      var scratcherNumbers = await ApiProvider(backend_endPoint + "api/lottery/getScratcherNumber/", "GET", null);
+      if(scratcherNumbers.status == 200){
+        this.setState({scratcherNumbers: scratcherNumbers.payload.winingNumbers})
+      }
+      else{
+        alert(scratcherNumbers.message);        
+      }
+      
+      var scratcherList = await ApiProvider(backend_endPoint + "api/lottery/getScratcherWinnerData/", "GET", null);
+      if(scratcherList.status == 200){
+        this.setState({scratcherList: scratcherList.payload})
+      }
+      else{
+        alert(scratcherList.message);        
+      }
+
     } catch (error) {
       console.log("error => "+error);
       alert(error);
@@ -776,6 +794,35 @@ class App extends Component {
   }
 
   switchPanel = (val) => this.setState({ panel: val });
+  setScratcher = async () => {
+    if(this.state.scratcherNumbers.length != 25)
+      return alert("Please fill all winning numbers.");
+    try {
+      var winningNumbers = await ApiProvider(backend_endPoint + "api/lottery/setScratcherNumber", "POST", {
+        winingNumbers: this.state.scratcherNumbers,
+      });
+      
+      if(winningNumbers.status == 200){
+        console.log("setScratcher => ", winningNumbers)
+        // this.setState({lastWinningNumber: winningNumbers.payload.winingNumbers})
+      }
+      else{
+        alert(winningNumbers.message);        
+      }
+    } catch (error) {
+      alert(error);
+    }
+  }
+
+  onChangeScratcher = (event, index) => {
+    console.log(event.target.value)
+    console.log({index})
+
+    var arr = this.state.scratcherNumbers;
+    arr[index] = event.target.value;
+    console.log({arr})
+    this.setState({scratcherNumbers: arr});
+  }
 
   trClassFormat = (rowData, rIndex)=> {
     var level = this.getTicketLevel(rowData.numbers);
@@ -791,7 +838,6 @@ class App extends Component {
     else{
       return null;
     }
-   
   }
   
   getTicketLevel = (ticket) => {
@@ -927,6 +973,7 @@ class App extends Component {
 
   render() {
     //https://discordapp.com/api/guilds/457238173060169728/widget.json
+    
     const panels = [
       <main
         style={{
@@ -1142,10 +1189,10 @@ class App extends Component {
                 <h2>SCRATCHER</h2>
                 <div className="row">
                   <div className="col-md-6" style={{overflow:"scroll"}}>
-                    <BootstrapTable data={this.state.ticketList} height="200px" scrollTop={"Top"} striped hover >
+                    <BootstrapTable data={this.state.scratcherList} height="200px" scrollTop={"Top"} striped hover >
                       <TableHeaderColumn dataAlign="center" width="20%" dataField="userName" > NAME </TableHeaderColumn>
                       <TableHeaderColumn dataAlign="center" width="40%" dataField="userCode" isKey > USER CODE </TableHeaderColumn>
-                      <TableHeaderColumn dataAlign="center" width="40%" dataFormat={this.ticketFormatter} dataField="numbers" > NUMBERS </TableHeaderColumn>
+                      <TableHeaderColumn dataAlign="center" width="40%" dataField="winingCost" > COST </TableHeaderColumn>
                     </BootstrapTable>
                   </div>
                   <div className="col-md-6" style={{overflow:"scroll"}}>
@@ -1153,100 +1200,100 @@ class App extends Component {
                       <div className="row">
                         <div className="col-md-1"></div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[0]} onChange={(e)=>this.onChangeScratcher(e, 0)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[1]} onChange={(e)=>this.onChangeScratcher(e, 1)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[2]} onChange={(e)=>this.onChangeScratcher(e, 2)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[3]} onChange={(e)=>this.onChangeScratcher(e, 3)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-1"></div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-1"></div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[4]} onChange={(e)=>this.onChangeScratcher(e, 4)} />
                         </div>
                         <div className="col-md-1"></div>
                       </div>
                       <div className="row">
                         <div className="col-md-1"></div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[5]} onChange={(e)=>this.onChangeScratcher(e, 5)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[6]} onChange={(e)=>this.onChangeScratcher(e, 6)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[7]} onChange={(e)=>this.onChangeScratcher(e, 7)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[8]} onChange={(e)=>this.onChangeScratcher(e, 8)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-1"></div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-1"></div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
-                        </div>
-                        <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[9]} onChange={(e)=>this.onChangeScratcher(e, 9)} />
                         </div>
                         <div className="col-md-1"></div>
                       </div>
                       <div className="row">
                         <div className="col-md-1"></div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[10]} onChange={(e)=>this.onChangeScratcher(e, 10)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[11]} onChange={(e)=>this.onChangeScratcher(e, 11)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[12]} onChange={(e)=>this.onChangeScratcher(e, 12)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[13]} onChange={(e)=>this.onChangeScratcher(e, 13)} />
                         </div>
                         <div className="col-md-2">
-                          <input className="input-scratcher"></input>
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[14]} onChange={(e)=>this.onChangeScratcher(e, 14)} />
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[15]} onChange={(e)=>this.onChangeScratcher(e, 15)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[16]} onChange={(e)=>this.onChangeScratcher(e, 16)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[17]} onChange={(e)=>this.onChangeScratcher(e, 17)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[18]} onChange={(e)=>this.onChangeScratcher(e, 18)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[19]} onChange={(e)=>this.onChangeScratcher(e, 19)} />
+                        </div>
+                        <div className="col-md-1"></div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-1"></div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[20]} onChange={(e)=>this.onChangeScratcher(e, 20)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[21]} onChange={(e)=>this.onChangeScratcher(e, 21)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[22]} onChange={(e)=>this.onChangeScratcher(e, 22)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[23]} onChange={(e)=>this.onChangeScratcher(e, 23)} />
+                        </div>
+                        <div className="col-md-2">
+                          <input className="input-scratcher" value={ this.state.scratcherNumbers[24]} onChange={(e)=>this.onChangeScratcher(e, 24)} />
                         </div>
                         <div className="col-md-1"></div>
                       </div>
                       <div className="row text-align-center">
-                        <button className="btn btn-success" style={{width: "200px"}} onClick={() => this.randomizeWinner()}>SET</button>
+                        <button className="btn btn-success" style={{width: "200px"}} onClick={() => this.setScratcher()}>SET</button>
                       </div>
                     </div>
                   </div>

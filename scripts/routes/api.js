@@ -36,4 +36,9 @@ router.get("/lottery/getPickData", lottery.getPickData);
 router.post("/lottery/setWinnerNumber", lottery.setWinnerNumber);
 router.get("/lottery/lastWinningNumber", lottery.lastWinningNumber);
 
+router.post("/lottery/setScratcherNumber", lottery.setScratcherNumber);
+router.get("/lottery/getScratcherNumber", lottery.getScratcherNumber);
+router.post("/lottery/sendScratcherWinnerData", lottery.sendScratcherWinnerData);
+router.get("/lottery/getScratcherWinnerData", lottery.getScratcherWinnerData);
+
 module.exports = router;

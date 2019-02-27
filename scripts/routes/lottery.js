@@ -2,6 +2,7 @@ var common = require('./common');
 var mongoose = require('mongoose');
 
 var ticketSchema = require('../models/tickets').ticketSchema;
+var scratcherSchema = require('../models/scratchers').scratcherSchema;
 
 exports.sendPickData =  function(req, res) {
     var Ticket = mongoose.model("Ticket", ticketSchema);
@@ -116,6 +117,115 @@ exports.lastWinningNumber =  function(req, res) {
     var Ticket = mongoose.model("Ticket", ticketSchema);
 
     Ticket.findOne({"winingNumbers": {$ne:[]}}, ['winingNumbers', 'createdAt']).sort({'createdAt': -1}).exec(function(err, data){
+        if(err){
+            return common.send(res, 400, '', err);
+        }
+        else{
+            return common.send(res, 200, data, 'success');
+        }
+    })
+}
+
+exports.setScratcherNumber =  function(req, res) {
+    var Scratcher = mongoose.model("Scratcher", scratcherSchema);
+
+    if (req.body.winingNumbers == undefined) {
+        return common.send(res, 401, '', 'winingNumbers is undefined');
+    }
+
+    var createAt = Math.round(new Date().getTime()/1000);
+    var newScratcher = new Scratcher({
+        winingNumbers: req.body.winingNumbers,
+        createdAt: createAt
+    });
+
+    Scratcher.find({"winingNumbers":{$ne:[]}}, ['_id'],function(err, data){
+        if(err){
+            return common.send(res, 400, '', err);
+        }
+        else{
+            if(data.length > 0){
+                var temp = [];
+                data.forEach(e=>{
+                    temp.push(e._id);
+                })
+                Scratcher.deleteMany({ _id: { $in: temp}}, function(err) {
+                    if(err){
+                        return common.send(res, 400, '', err);
+                    }
+                    else{
+                        newScratcher.save(function(err, result){
+                            if(err){
+                                return common.send(res, 400, '', err);
+                            }
+                            else{
+                                return common.send(res, 200, result, 'success');
+                            }
+                        })
+                    }
+                })
+            }
+            else{
+                newScratcher.save(function(err, result){
+                    if(err){
+                        return common.send(res, 400, '', err);
+                    }
+                    else{
+                        return common.send(res, 200, result, 'success');
+                    }
+                })
+            }
+        }
+    }) 
+}
+
+exports.getScratcherNumber =  function(req, res) {
+    var Scratcher = mongoose.model("Scratcher", scratcherSchema);
+    Scratcher.findOne({"winingNumbers": {$ne:[]}}, ['winingNumbers', 'createdAt']).sort({'createdAt': -1}).exec(function(err, data){
+        if(err){
+            return common.send(res, 400, '', err);
+        }
+        else{
+            return common.send(res, 200, data, 'success');
+        }
+    })
+}
+
+exports.sendScratcherWinnerData =  function(req, res) {
+    var Scratcher = mongoose.model("Scratcher", scratcherSchema);
+    if (req.body.userName == undefined) {
+        return common.send(res, 401, '', 'userName is undefined');
+    }
+    if (req.body.userCode == undefined) {
+        return common.send(res, 401, '', 'userCode is undefined');
+    }
+    
+    if (req.body.winingCost == undefined) {
+        return common.send(res, 401, '', 'winingCost is undefined');
+    }
+
+    var createAt = Math.round(new Date().getTime()/1000);
+    var newScratcher = new Scratcher({
+        userName: req.body.userName,
+        userCode: req.body.userCode,
+        winingCost: req.body.winingCost,
+        winingNumbers: [],
+        createdAt: createAt
+    });
+
+    newScratcher.save(function(err, result){
+        if(err){
+            return common.send(res, 400, '', err);
+        }
+        else{
+            return common.send(res, 200, result, 'success');
+        }
+    })
+}
+
+exports.getScratcherWinnerData =  function(req, res) {
+    var Scratcher = mongoose.model("Scratcher", scratcherSchema);
+    Scratcher.find({"winingNumbers":[]}, ['userName', 'userCode', 'winingCost'],function(err, data){
         if(err){
             return common.send(res, 400, '', err);
         }
