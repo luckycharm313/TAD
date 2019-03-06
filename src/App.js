@@ -1106,7 +1106,9 @@ class App extends Component {
           backgroundColor: "#2c2c2c",
           backgroundImage: `'url("${frontend_endPoint}usFlag.jpg")'`,
           backgroundSize: "cover",
-          height: "100vh",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          height: "100%",
           margin: 0,
           paddingTop: "10px"
         }}
@@ -1117,8 +1119,8 @@ class App extends Component {
         <h1>THE AMERICAN DREAM</h1>
         <div style={{ height: "calc(100% - 30px)" }} >
           <div className="row">
-            <div className="col-md-8">
-              <div className="box m-h-55" style={{ maxHeight: "52vh"}}>
+            <div className="col-md-6">
+              <div className="box m-h-55" style={{ height: "57%", overflow: "scroll"}}>
                 <h2>LOTTO</h2>
                 <div className="row p-h-10">
                   <div className="col-md-6" style={{overflow:"scroll"}}>
@@ -1185,7 +1187,37 @@ class App extends Component {
                   </div>
                 </div>                
               </div>
-              <div className="box" style={{ maxHeight: "33vh"/*, overflow: "scroll"*/}}>
+              
+            </div>
+            <div className="col-md-6">
+              <div style={{ height: "40%" }} className="box">
+                <h2>CURRENT JACKPOT</h2>
+                <div style={{
+                      marginTop: "10px",
+                      marginBottom: "10px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                }}>              
+                  <span style={{ fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "5px", textAlign: "left" }}>$</span>
+                  <input
+                      ref={(input) => { this.jackpotInput = input; }} 
+                      value={ this.state.isEditJackPot?this.state.jackpot: this.state.jackpot.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
+                      onChange={this.onChangeJackpot}
+                      style={{ backgroundColor: "transparent", border: "none", fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "20px", width: "70%", textAlign: "left"}}
+                      readOnly={this.state.isEditJackPot?false:true }/>
+                    
+                  <div onClick={()=>{
+                    if(this.state.isEditJackPot)
+                      return this.saveJackPot();
+                    else
+                      return this.editJackPot();
+                    }}>
+                    <FontAwesomeIcon size="lg" color="white" icon={this.state.isEditJackPot?"save":"edit" } />
+                  </div>
+                </div>              
+              </div>
+              <div className="box" style={{ height: "57%", overflow: "scroll"}}>
                 <h2>SCRATCHER</h2>
                 <div className="row">
                   <div className="col-md-6" style={{overflow:"scroll"}}>
@@ -1298,39 +1330,10 @@ class App extends Component {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-            
+              </div>          
 
             {/* <div style={{ width: "30%" }}> */}
-              <div style={{ height: "40%" }} className="box">
-                <h2>CURRENT JACKPOT</h2>
-                <div style={{
-                      marginTop: "10px",
-                      marginBottom: "10px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center"
-                }}>              
-                  <span style={{ fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "5px", textAlign: "left" }}>$</span>
-                  <input
-                      ref={(input) => { this.jackpotInput = input; }} 
-                      value={ this.state.isEditJackPot?this.state.jackpot: this.state.jackpot.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}                    
-                      onChange={this.onChangeJackpot}
-                      style={{ backgroundColor: "transparent", border: "none", fontSize: "30px", color: "white", fontWeight: "bold", marginRight: "20px", width: "70%", textAlign: "left"}}
-                      readOnly={this.state.isEditJackPot?false:true }/>
-                    
-                  <div onClick={()=>{
-                    if(this.state.isEditJackPot)
-                      return this.saveJackPot();
-                    else
-                      return this.editJackPot();
-                    }}>
-                    <FontAwesomeIcon size="lg" color="white" icon={this.state.isEditJackPot?"save":"edit" } />
-                  </div>
-                </div>              
-              </div>
+              
             {/* </div> */}
             </div>
           </div>       

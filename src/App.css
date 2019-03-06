@@ -1,8 +1,11 @@
 /* PAGE */
-html{
-  color: "white"
+html, body{
+  color: "white";
+  height: 100%;
 }
-
+.App {
+  height: 100%;
+}
 .winnerTab {
     color: orange;
     margin: 2px;

@@ -225,7 +225,7 @@ exports.sendScratcherWinnerData =  function(req, res) {
 
 exports.getScratcherWinnerData =  function(req, res) {
     var Scratcher = mongoose.model("Scratcher", scratcherSchema);
-    Scratcher.find({"winingNumbers":[]}, ['userName', 'userCode', 'winingCost'],function(err, data){
+    Scratcher.find({"winingNumbers":[]}, ['userName', 'userCode', 'winingCost']).sort({'createdAt': -1}).limit(100).exec(function(err, data){
         if(err){
             return common.send(res, 400, '', err);
         }
