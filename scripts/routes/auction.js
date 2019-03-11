@@ -65,7 +65,7 @@ exports.get =  function(req, res) {
         { $project : { 
             "auctionId" : "$_id", 
             "itemName":"$data.itemName", 
-            // "itemCategory":"$data.itemCategory", 
+            "itemCategory":"$data.itemCategory", 
             // "ownerGamerCode":"$data.ownerGamerCode", 
             "ownerName":"$data.ownerName", 
             "minPrice":"$data.minPrice", 

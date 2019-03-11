@@ -6,6 +6,7 @@ var governor = require('./governor');
 var message = require('./message');
 var auction = require('./auction');
 var lottery = require('./lottery');
+var tax = require('./tax');
 /***
  * common apis
  */
@@ -40,5 +41,10 @@ router.post("/lottery/setScratcherNumber", lottery.setScratcherNumber);
 router.get("/lottery/getScratcherNumber", lottery.getScratcherNumber);
 router.post("/lottery/sendScratcherWinnerData", lottery.sendScratcherWinnerData);
 router.get("/lottery/getScratcherWinnerData", lottery.getScratcherWinnerData);
+
+router.get("/tax/getGovTax", tax.getGovTax);
+router.post("/tax/setGovTax", tax.setGovTax);
+router.get("/tax/getTadTax", tax.getTadTax);
+router.post("/tax/setTadTax", tax.setTadTax);
 
 module.exports = router;

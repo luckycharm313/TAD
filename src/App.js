@@ -510,14 +510,14 @@ class App extends Component {
             this.setState({
               totalSupply: (result / Math.pow(10, 18)).toString(10)
             });
-            /*
+            
             return simpleStorageInstance.govTax().then(result => {
               console.log("GOV TAX", result.toString(10));
               this.setState({ govTax: result.toString(10) });
               return simpleStorageInstance.tadTax().then(result => {
                 console.log("TAD TAX", result.toString(10));
                 this.setState({ tadTax: result.toString(10) });
-                return simpleStorageInstance.govFunds().then(result => {
+              /*  return simpleStorageInstance.govFunds().then(result => {
                   console.log("GOV FUNDS", result.toString(10));
                   this.setState({ govFunds: result.toString(10) });
                   var arr = [];
@@ -529,9 +529,9 @@ class App extends Component {
                       if (x === 49) this.setState({ governors: arr });
                     });
                   }
-                });
+                });*/
               });
-            }); */
+            }); 
           }); 
         });
     });
@@ -542,60 +542,65 @@ class App extends Component {
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
 
-    // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance;
-    // Get accounts.
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage
-        .at(ropstenAddress)
-        .then(instance => {
-          simpleStorageInstance = instance;
-          this.setState({ coinbase: accounts[0] });
-          simpleStorage.defaults({ from: accounts[0] });
-          // Stores a given value, 5 by default.
-          return simpleStorageInstance.balanceOf(accounts[0]);
-        })
-        .then(result => {
-          console.log(result.toString(10));
-          return simpleStorageInstance
-            .setGovTax(this.state.govTaxAmount)
-            .then(result => {
-              console.log(" 460 set Gov Tax result ", result);
-              return simpleStorageInstance.govTax().then(result => {
-                console.log("GOV TAX");
-                console.log(result);
-                this.setState({ govTax: result.toString(10) });
-                this.handleCloseModal();
-              });
-            });
+    this.state.web3.eth.getAccounts(async (error, accounts) => {
+      try {
+        var simpleStorageInstance = await simpleStorage.at(ropstenAddress);
+        this.setState({ coinbase: accounts[0] });
+        simpleStorage.defaults({ from: accounts[0] });
+        await simpleStorageInstance.balanceOf(accounts[0]);
+        await simpleStorageInstance.setGovTax(this.state.govTaxAmount);
+        await simpleStorageInstance.govTax();
+        var _govTax = this.state.govTaxAmount;
+
+        var tadTax = await ApiProvider(backend_endPoint + "api/tax/setGovTax/", "POST", {
+          govTax: _govTax,
         });
+
+        if(tadTax.status == 200){
+          this.setState({ govTax: _govTax });
+        }
+        else{
+          alert(tadTax.message)
+        }
+        this.handleCloseModal();
+
+      } catch (error) {
+        console.log("changeGovTax Error ", error)
+      }
     });
   }
 
   changeTadTax() {
+    
     const contract = require("truffle-contract");
     const simpleStorage = contract(SimpleStorageContract);
     simpleStorage.setProvider(this.state.web3.currentProvider);
-    var simpleStorageInstance;
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage
-        .at(ropstenAddress)
-        .then(instance => {
-          simpleStorageInstance = instance;
-          this.setState({ coinbase: accounts[0] });
-          simpleStorage.defaults({ from: accounts[0] });
-          return simpleStorageInstance.balanceOf(accounts[0]);
-        })
-        .then(result => {
-          return simpleStorageInstance
-            .setGameTax(this.state.tadTaxAmount)
-            .then(result => {
-              return simpleStorageInstance.tadTax().then(result => {
-                this.setState({ tadTax: result.toString(10) });
-                this.handletadCloseModal();
-              });
-            });
+    
+    this.state.web3.eth.getAccounts(async (error, accounts) => {
+      try {
+        var simpleStorageInstance = await simpleStorage.at(ropstenAddress);
+        this.setState({ coinbase: accounts[0] });
+        simpleStorage.defaults({ from: accounts[0] });
+        await simpleStorageInstance.balanceOf(accounts[0]);
+        await simpleStorageInstance.setGameTax(this.state.tadTaxAmount);
+        await simpleStorageInstance.tadTax();
+        var _tadTax = this.state.tadTaxAmount;
+
+        var tadTax = await ApiProvider(backend_endPoint + "api/tax/setTadTax/", "POST", {
+          tadTax: _tadTax,
         });
+
+        if(tadTax.status == 200){
+          this.setState({ tadTax: _tadTax });
+        }
+        else{
+          alert(tadTax.message)
+        }
+        this.handletadCloseModal();
+
+      } catch (error) {
+        console.log("changeTadTax Error ", error)
+      }
     });
   }
 
